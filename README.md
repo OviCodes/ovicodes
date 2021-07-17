@@ -1,33 +1,7 @@
-# Website
+I'm a software engineer from [Timisoara, Romania](https://www.google.ro/maps/place/Timi%C8%99oara/@45.741043,21.1463784,12z/data=!3m1!4b1!4m5!3m4!1s0x4745677dcb0fb5a7:0x537faf6473936749!8m2!3d45.7488716!4d21.2086793?hl=ro) with over 10 years of work experience in the tech industry, from start-ups and agencies to multi-national companies, and have worked with clients like [National Geographic](https://www.nationalgeographic.com/), [Pearson](https://www.pearson.com/) and [The Telegraph](https://www.telegraph.co.uk/).
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
+- I work as a senior software engineer at a top outsourcing company
+- I teach best practices to internal teams and external clients
+- I build cool projects using cutting-edge technologies
 
-## Installation
-
-```console
-yarn install
-```
-
-## Local Development
-
-```console
-yarn start
-```
-
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
-
-## Build
-
-```console
-yarn build
-```
-
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-## Deployment
-
-```console
-GIT_USER=<Your GitHub username> USE_SSH=true yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+In my spare time I enjoy practicing contact sports and martial arts.
