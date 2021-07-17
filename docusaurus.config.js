@@ -4,7 +4,7 @@ module.exports = {
   /*** Site metadata ******************************************************************************/
   title: 'OviCodes',
   tagline: '',
-  url: 'https://ovi.codes',
+  url: 'www-ovicodes.netlify.com',
   baseUrl: '/',
   favicon: 'img/favicon.ico',
   /*** Deployment configuration *******************************************************************/
