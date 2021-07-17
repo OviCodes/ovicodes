@@ -1,0 +1,132 @@
+---
+title: Home
+id: home
+slug: /
+sidebar_position: 1
+---
+
+# Twelve-Factor Apps
+
+In the modern era most software applications are delivered as a service (commonly called **web apps** or **software-as-a-service**).
+
+The twelve-factor methodology was created in 2012 at Heroku and can be applied to apps written in any programming language, that use any combination of backing services.
+The majority of the docs on this website revolve around the idea of implementing these concepts, as well as writing clean, maintainable code.
+
+## Features
+
+- **declarative setup-automation** that minimizes the time and cost for new developers joining the project
+- **maximum portability** between different execution environments
+- **cloud platform deployments** that eliminate the need for servers and systems administration
+- **continuous deployments** and minimizing the divergence between development and production
+- **scaling up without significant changes** to tooling, architecture, or development practices
+
+## 1. Codebase
+
+> One codebase tracked in revision control, many deploys
+
+- An app's codebase (eg. source code, assets, provisioning script, etc.) must be tracked in revision control (`Git`) and can only live in a single repository.
+  If an app's code is spread across multiple repositories it's a _distributed system_ not an app. In such a case, each repository of a distributed system can be a Twelve Factors App.
+- Multiple apps should not share (duplicate) the same code. Shared code must be factored into libraries, which will be included through a dependency manager (`npm`).
+- There will be different deployments of an app (development, staging, production, etc.) but all deployments of an app will be built from the same codebase of the app.
+- The code in the repository is used to produce a single build, which is combined with environment-specific configuration to produce an immutable release (a release where no changes can be made, including to the configuration) that can then be deployed to a cloud environment.
+
+:::note
+For brevity these examples assume `npm` is used as a package manager but the same effects can be achieved by using the equivalent `yarn` commands.
+:::
+
+## 2. Dependencies
+
+> Explicitly declare and isolate dependencies
+
+- Only code that is unique and relevant to the purpose of the app should live in the app's codebase.
+- For supporting packages use a a dependency declaration manifest (`package.json`) and a dependency isolation tool (`npm`).
+- Never rely on implicit existence of system-wide packages (eg. installed using `npm i -g`) - scope all packages into the directory containing the app.
+- Never rely on implicit existence of system tools (`curl`, `ImageMagick`) - in non-containerized environments use a configuration management tool (`Chef`, `Puppet`, `Ansible`) to install them and in a containerized environment do this in the `Dockerfile`.
+- The only installed prerequisites required for a developer to run the app will be the language runtime (`node`) and the dependency manager (`npm`).
+- To set up everything needed to run the app a deterministic build command should be enaugh (`npm install`).
+
+## 3. Config
+
+> Store config in the environment
+
+- In the scope of Twelve Factor Apps, configs are resource handles (DB, Redis, and other backing services), credentials to external services (Amazon S3, Postmark, etc.) and everything else (eg. state settings such as DEBUG) that is likely to vary between deploys (development, staging, production environments). Config that is NOT different between deploys (eg. `tsconfig.json`, `.prettierrc.js`, etc.) is out of the scope of this rule.
+- Never store configs as constants in the code, use env vars instead (eg. use the `dotenv` npm package, and for local development an `.env` file that is added to `.gitignore` - `Docker` supports loading this file at runtime)
+- Once you have deployed your application to a delivery platform (staging, production), use the delivery platform's mechanism for managing environment variables.
+- Do not batch configs into named groups often called “environments” (`.env.development`, `.env.staging`, `.env.production`, etc.) and store them in version control because this does not scale well and it also permits accidentally commiting secrets to the repository.
+
+## 4. Backing Services
+
+> Treat backing services as attached resources
+
+- Backing services are any services the app consumes over the network - both locally-managed such as datastores (`PostgreSQL`, `MongoDB`), messaging/queueing systems (`RabbitMQ`), caching systems (`Redis`) etc. and third party services (`PostMark`, `New Relic`, `Amazon S3`)
+- Both locally-managed and third party services are considered by the app as attached resources (accessed via a URL or other locator/credentials stored in the config).
+- A deploy of the twelve-factor app should be able to swap out a local MySQL database with one managed by a third party (such as Amazon RDS) or a local SMTP server with a third-party SMTP service (such as Postmark) by only changing the resource handle in the config and without any changes to the app's code.
+
+## 5. Build, Release, Run
+
+> Strictly separate build and run stages
+
+- The **build stage** transform the source code from the app's codebase using a version of the code at a commit specified by the deployment process, fetches vendors dependencies, and compiles binaries and assets into a bundle known as a build.
+- The **release stage** takes the output of the build stage and combines it with the deploy's current config to create a release that has a unique ID (`SemVer`).
+- The **run stage** provisions a runtime environment via scripts (using a tool such as `Ansible` or `Docker`) and runs the relase.
+- The three stages are strictly separated because it's impossible to make changes to the code at runtime and have a way to propagate those changes back to the build stage. In such a case you must add the code changes to the repository, re-build, create a new release and run the new release.
+- Builds are initiated by developers (manually or automatically - on code push, by opening a PR, etc. - using a tool for CI/CD such as `Jenkins` or `CircleCI`), while runtime execution can also happen independent of developers (in cases such as a server reboot, or a crashed process being restarted by the process manager) so it should be kept to as few moving parts as possible.
+
+## 6. Processes
+
+> Execute the app as one or more stateless processes
+
+- Stateless services scale horizontally by simply adding more instances of that service.
+- The filesystem or memory of the app's process can only be used as a brief single-transaction cache, but the app shouldn't rely on any state to be stored locally (on disk or in memory) and to be available on a future request or job because chances are high that a future request will be served by a different process.
+- Even when running only one process, a restart (triggered by code deploy, config change, or the execution environment relocating the process to a different physical location) will usually wipe out all local state (filesystem and memory).
+- Do not rely on "sticky sessions" (caching user session data in memory of the app's process and expecting future requests from the same visitor to be routed to the same process). Session state data is a good candidate for a datastore that offers time-expiration (`Redis`).
+- Do not persist data locally (persistent data must be stored in a stateful backing service, typically a database).
+
+## 7. Port Binding
+
+> Export services via port binding
+
+- Domain names and associated IP addresses can be assigned on-the-fly, so the app must be identifiable to the network by port number only, not by a domain name.
+- The app is completely self-contained and does not rely on a webserver (`Apache`, `Tomcat`, etc.) to be injected into the execution environment. It exports HTTP as a service by binding to a port, and listening to requests coming in on that port.
+
+## 8. Concurrency
+
+> Scale out via the process model
+
+- An individual VM can only grow so large, so the app must be able to span multiple processes running on multiple physical machines (horizontal scale) instead of only adding more memory or CPU on a single instance (vertical scale).
+- Inside the container the app should not run as a daemon or in a background, and must rely on the operating system's process manager to manage output streams, respond to crashed processes, and handle user-initiated restarts and shutdowns.
+
+## 9. Disposability
+
+> Maximize robustness with fast startup and graceful shutdown
+
+- The twelve-factor app's processes can be started or stopped at a moment's notice with no loss of data (by storing state or session data in queues or other backing services).
+- They must minimize startup time (take only a few seconds from the time the launch command is executed until the process is up and ready to receive requests or jobs)
+- They must also shut down gracefully - listen for a SIGTERM signal from the process manager (eg. for a web process, ceasing to listen on the service port and refusing any new requests, allowing any current requests to finish, ensuring that all database connections and other network resources are terminated properly, and then exiting, or for a worker process, returning the current job to the work queue - eg. a `RabbitMQ` worker can send a NACK).
+
+## 10. Dev/Prod Parity
+
+> Keep development, staging, and production as similar as possible
+
+- Make the time gap small by enabling developers to have their code deployed in as little as hours or even just minutes later.
+- Make the personnel gap small by enabling developers who wrote the code to be closely involved in deploying it and watching its behavior in production.
+- Make the tools gap small by keeping development and production as similar as possible (eg. don't use `SQLite` for local development and `PostgreSQL` in production, or local process memory for caching in development and `Redis` in production).
+- `Docker` containers enable you to run exactly the same execution environment all the way from local development through production.
+
+## 11. Logs
+
+> Treat logs as event streams
+
+- Logs are the stream of aggregated, time-ordered events collected from the output streams of all running processes and backing services.
+- The app never concerns itself with routing or storage of its output stream (it should not attempt to write to or manage logfiles) and each running process writes its event stream, unbuffered, to stdout.
+- During local development, the developer will view this stream in the foreground of their terminal to observe the app’s behavior.
+- In staging or production deploys, each process' stream will be captured by the execution environment (this way, even if your application crashes, the logging agent can capture the logs), collated together with all other streams from the app (`Logstash`, `Fluentd`), and sent to a log indexing and analysis system (`ELK`, `Splunk`, etc).
+
+## 12. Admin Processes
+
+> Run admin/management tasks as one-off processes
+
+- Developers will often wish to do one-off administrative or maintenance tasks for the app, such as running database migrations, run a REPL shell to inspect the app’s models against the live database or running one-time scripts committed into the app’s repo (eg. seeding the DB).
+- These should be run in an identical environment as the regular long-running processes of the app (run against a release, using the same codebase and config as any process running against that release and use the same dependency isolation techniques used on all process types).
+- In a local deploy, developers invoke one-off admin processes by a direct shell command inside the app’s checkout directory.
+- In a production deploy, developers can use ssh or other remote command execution mechanism provided by that deploy’s execution environment to run such a process.

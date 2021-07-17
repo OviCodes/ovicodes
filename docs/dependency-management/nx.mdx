@@ -1,0 +1,297 @@
+---
+title: NX
+sidebar_position: 3
+---
+
+# NX
+
+Continue: https://nx.dev/react/tutorial/01-create-application
+
+:::tip
+Once you understand the basics of NX using the terminal, you can also install the [NX VSCode Extension](https://marketplace.visualstudio.com/items?itemName=nrwl.angular-console) to speed things up!
+:::
+
+## Create a Workspace
+
+```bash title="$ npx create-nx-workspace <umbrella_project_name>"
+✔ What to create in the new workspace · react-express
+✔ Application name                    · <app_name>
+✔ Default stylesheet format           · css
+✔ Use Nx Cloud? (It's free and doesn't require registration.) · Yes
+```
+
+## List available plugins
+
+```bash title="$ yarn nx list"
+>  NX  Installed plugins:
+
+  @nrwl/jest (builders,generators)
+  @nrwl/linter (builders)
+  @nrwl/workspace (builders,generators)
+
+>  NX  Also available:
+
+  @nrwl/angular (generators)
+  @nrwl/cypress (builders,generators)
+  @nrwl/express (generators)
+  @nrwl/nest (executors,generators)
+  @nrwl/next (executors,generators)
+  @nrwl/node (builders,generators)
+  @nrwl/nx-plugin (executors,generators)
+  @nrwl/react (generators)
+  @nrwl/storybook (builders,generators)
+  @nrwl/web (builders,generators)
+
+
+>  NX  Community plugins:
+
+  @rxap/plugin-localazy - An Nx plugin for localazy.com upload and download tasks.
+  nx-electron - An Nx plugin for developing Electron applications
+  nx-stylelint - Nx plugin to use stylelint in a nx workspace
+  ...
+```
+
+## Add a plugin
+
+- eg. `yarn add @nrwl/react`
+
+## Show an installed plugin's capabilities
+
+```bash title="$ yarn nx list @nrwl/storybook"
+>  NX  Capabilities in @nrwl/storybook:
+
+  GENERATORS
+
+  init : Add storybook configuration to the workspace
+  configuration : Add storybook configuration to a ui library or an application
+  cypress-project : Add cypress e2e app to test a ui library that is set up for storybook
+  migrate-defaults-5-to-6 : Generate default Storybook configuration files using Storybook version >=6.x specs, for projects that already have Storybook instances and configurations of versions <6.x.
+  migrate-stories-to-6-2 : Migrate stories syntax to 6.2
+
+  EXECUTORS/BUILDERS
+
+  storybook : Serve Storybook
+  build : Build Storybook
+```
+
+## Use a plugin's generators
+
+```bash title="$ yarn nx generate @nrwl/react:application --help"
+nx generate @nrwl/react:application [name] [options,...]
+
+Options:
+  --name                  The name of the application.
+  --directory             The directory of the new application.
+  --style                 The file extension to be used for style files. (default: css)
+  --linter                The tool to use for running lint checks. (default: eslint)
+  --routing               Generate application with routes.
+  --skipFormat            Skip formatting files.
+  --skipWorkspaceJson     Skip updating workspace.json with default options based on values provided to this app (e.g. babel, style).
+  --unitTestRunner        Test runner to use for unit tests. (default: jest)
+  --e2eTestRunner         Test runner to use for end to end (e2e) tests. (default: cypress)
+  --tags                  Add tags to the application (used for linting).
+  --pascalCaseFiles       Use pascal case component file name (e.g. App.tsx).
+  --classComponent        Use class components instead of functional component.
+  --js                    Generate JavaScript files rather than TypeScript files.
+  --globalCss             Default is false. When true, the component is generated with *.css/*.scss instead of *.module.css/*.module.scss
+  --strict                Creates an application with stricter type checking and build optimization options. (default: true)
+  --setParserOptionsProjecWhether or not to configure the ESLint "parserOptions.project" option. We do not do this by default for lint performance reasons.
+  --standaloneConfig      Split the project configuration into <projectRoot>/project.json rather than including it inside workspace.json
+  --dryRun                Runs through and reports activity without writing to disk.
+  --skip-nx-cache         Skip the use of Nx cache.
+  --help                  Show available options for project target.
+```
+
+## Run an app
+
+- via NX command: `yarn nx run <app_name>:<target>` (build, serve, lint, test, etc.)
+- via generated package.json scripts: `yarn start` (will run against `workspace.json` > `defaultProject`)
+
+:::tip Targets
+View the run targets in `workspace.json` > `projects` > `targets`
+:::
+
+- React App URL: http://localhost:4200
+
+## Install an external npm package
+
+- eg. `yarn add @material-ui/core` (will be importable in any of the project's apps)
+
+## Create a shared library
+
+:::note
+In an NX workspace applications are usualy very thin and use most code from the `/libs` directory (where 80% of your entire code should live)
+:::
+
+```bash
+yarn nx g @nrwl/workspace:lib <lib_name> # => /libs/lib_name (generic lib)
+yarn nx g @nrwl/workspace:lib <lib_name> --directory=<app_name> # => /libs/app_name/lib_name (app specific)
+```
+
+:::tip Paths
+View the generated paths in `/tsconfig.base.json` > `compilerOptions` > `paths`
+:::
+
+Import examples:
+
+- `import { LibName } from @umbrella_project_name/lib_name` (generic lib)
+- `import { LibName } from '../../../../libs/app_name/lib_name/src'` (app specific lib imported in the same app)
+- `import { LibName } from @umbrella_project_name/app_name/lib_name` (app specific lib imported in a different app)
+
+## Create a React shared library
+
+```bash
+yarn nx g @nrwl/react:lib <lib_name> # => /libs/lib_name (generic lib)
+yarn nx g @nrwl/react:lib <lib_name> --directory=<app_name> # => /libs/app_name/lib_name (app specific)
+yarn nx g @nrwl/react:lib <lib_name> --directory=<app_name> --appProject=<app_name> # => /libs/app_name/lib_name (app specific, also adds a route to lib_name in app_name)
+```
+
+:::tip Paths
+View the generated paths in `/tsconfig.base.json` > `compilerOptions` > `paths`
+:::
+
+Import examples:
+
+- `import { LibName } from @umbrella_project_name/lib_name` (generic lib)
+- `import { LibName } from '../../../../libs/app_name/lib_name/src'` (app specific lib imported in the same app)
+- `import { LibName } from @umbrella_project_name/app_name/lib_name` (app specific lib imported in a different app)
+
+## Create a React component
+
+```bash
+yarn nx g @nrwl/react:component <component_name> # => /apps/default_app_name/src/app/component_name (generated by default inside defaultProject app)
+yarn nx g @nrwl/react:component <component_name> --project=<project_name> # => /apps/app_name/src/app/component_name (generated inside the specified app if project is an app)
+yarn nx g @nrwl/react:component <component_name> --project=<project_name> # => /libs/lib_name/src/lib/component_name (generated inside the specified generic library if project is a generic library)
+yarn nx g @nrwl/react:component <component_name> --project=<project_name> # => /libs/app_name/lib_name/src/lib/component_name (generated inside the specified app specific library if project is an app specific library)
+```
+
+:::tip Projects
+View existing projects (apps and libs) in `/workspace.json` > `projects`
+:::
+
+:::tip Paths
+View the generated paths in `/tsconfig.base.json` > `compilerOptions` > `paths`
+:::
+
+Import examples:
+
+- `import { ComponentName } from '@umbrella_project_name/lib_name'` (generic lib component)
+- `import { ComponentName } from ./component_name` (app specific component imported in the same app)
+- `import { ComponentName } from '../../../../libs/app_name/lib_name/src'` (app specific lib component imported in the same app)
+- `import { ComponentName } from '@umbrella_project_name/app_name/lib_name'` (app specific lib component imported in a different lib)
+
+## View the Dependency Graph
+
+- `yarn nx dep-graph`
+
+## Create an Express API
+
+```bash
+yarn add @nrwl/express
+yarn nx g @nrwl/express:application express_app_name --frontendProject=frontend_app_name
+yarn nx run express_app_name:serve
+```
+
+- Express App URL: http://localhost:3333/api
+
+:::tip Targets
+View the run targets in `workspace.json` > `projects` > `targets`
+:::
+
+## Run multiple apps
+
+```bash title="yarn nx run-many --target=serve --projects=api,frontend --parallel=true"
+>  NX  Running target serve for 2 project(s):
+
+  - api
+  - frontend
+
+———————————————————————————————————————————————
+
+> nx run frontend:serve
+> nx run api:serve
+...
+```
+
+## Add run commands
+
+```json title="workspace.json > projects > frontent_app > targets"
+...
+"build": { ... },
+"serve": { ... }
+"lint": { ... },
+"test": { ... },
+"runFrontendAndAPI": {
+  "executor": "@nrwl/workspace:run-commands",
+  "options": {
+    "commands": [
+      { "command": "yarn nx run foo:serve" },
+      { "command": "yarn nx run api:serve" }
+    ]
+  }
+},
+...
+```
+
+- `yarn nx run foo:runFrontendAndAPI`
+
+## Reuse interfaces between frontend and backend apps
+
+- `yarn nx g @nrwl/workspace:lib interfaces --directory=api`
+
+```ts title="/libs/api/interfaces/src/lib/interfaces.ts"
+export interface Product {
+  id: string
+  title: string
+  price: number
+}
+```
+
+```ts title="/apps/api/src/app/products.repository.ts"
+import { Product } from '../../../../libs/api/interfaces/src';
+
+const products: Product[] = [ ... ];
+
+app.get('/api/products', (req, res) => {
+  res.send(products);
+});
+
+...
+```
+
+```ts title="/apps/frontend/src/app/app.ts"
+import { Product } from '@umbrella_project_name/api/interfaces';
+
+const [products, setProducts] = React.useState<{
+  data: Product[];
+  loadingState: 'success' | 'error' | 'loading'
+}>({
+  data: [],
+  loadingState('loading')
+});
+```
+
+## Use Storybook
+
+```bash
+yarn add -D @nrwl/storybook
+yarn nx g @nrwl/react:storybook-configuration project_name --configureCypress --generateStories
+yarn nx run project_name:storybook
+```
+
+:::tip Projects
+View existing projects (apps and libs) in `/workspace.json` > `projects`
+:::
+
+- Storybook URL: http://localhost:4400
+
+## Use Cypress
+
+```bash
+yarn nx run project_name-e2e:e2e --watch    # Development mode
+yarn nx run project_name-e2e:e2e --headless # CI mode
+```
+
+:::tip Projects
+View existing projects (apps and libs) in `/workspace.json` > `projects`
+:::

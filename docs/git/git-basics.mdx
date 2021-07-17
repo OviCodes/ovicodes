@@ -1,0 +1,544 @@
+---
+sidebar_position: 1
+---
+
+# Git Basics
+
+## Initialize a Git repository
+
+```bash
+git init
+git status
+
+git remote add origin git@github.com:<username>/<repository_name>.git
+# or
+git remote add origin https://github.com/<username>/<repository_name>.git
+git remote -v
+
+git branch -M main
+git push -u origin main
+```
+
+## Clone a Git repository
+
+```bash
+git clone git@github.com:<username>/<repository_name>.git
+# or
+git clone https://github.com/<username>/<repository_name>.git
+```
+
+## Create a feature branch
+
+```bash
+git checkout main
+git pull
+git checkout -b feature-branch
+```
+
+## Commit all changes and push feature branch
+
+```bash
+git status
+git add -A
+git commit -m 'Commit message'
+git push origin feature-branch
+```
+
+## Selectively commit changes and push feature branch
+
+```bash
+git status
+git add file1 file2
+git commit -m "First commit"
+git add .
+git reset file_with_staged_changes_i_want_to_unstage
+git rm --cached staged_or_committed_file_i_want_to_untrack
+git rm -f staged_or_committed_file_i_want_to_delete
+git commit -m "Second commit"
+git push origin feature-branch
+```
+
+## Track remote changes from a pushed feature branch
+
+```bash
+git checkout feature-branch
+git branch --set-upstream-to=origin/feature-branch feature-branch
+git pull
+```
+
+## Inspect file changes
+
+```bash
+git log filename 				# show all commits that affected this file
+git log -p filename				# show all commits that affected this file and what changes they introduced (patch)
+git log -p -S"string"			# show all commits that introduced/removed "string" and the place inside each affected file
+git log -p -S"string" filename  # show all commits that introduced/removed "string" in filename and the place inside it
+
+git diff		  				# show unstaged changes inside all traked files (diff between last commit and current working directory)
+git diff filename  				# show unstaged changes inside tracked filename
+git diff --cached 				# show staged changes inside all staged files (diff between last commit and staging area)
+git diff --cached filename		# show staged changes inside staged filename
+git diff HEAD					# show uncommited changes inside all traked files (diff between last commit and current working directory plus staging area)
+git diff HEAD filename			# show uncommited changes inside tracked filename
+
+git fetch && git diff origin/main 			# show changes between current local branch (working directory, staging area, local commits) and given remote branch
+git fetch && git diff origin/main filename	# show changes inside tracked filename that are on the current local branch and not on the given remote branch
+
+git blame filename				# show who changed each line of the file, in which commit and when the line was changed
+```
+
+## Fix conflicts when feature branch has been updated remotely
+
+```bash title="$ git push origin feature-branch" {2}
+To https://github.com/<username>/<repository_name>.git
+ ! [rejected]        feature-branch -> feature-branch (fetch first)
+error: failed to push some refs to 'https://github.com/<username>/<repository_name>.git'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+Merge branch 'feature-branch' of https://github.com/<username>/<repository_name> into feature-branch
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+```
+
+```bash title="$ git pull" {8}
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (3/3), 637 bytes | 318.00 KiB/s, done.
+From https://github.com/<username>/<repository_name>
+   1b546fe..dc45e0d  feature-branch       -> origin/feature-branch
+Auto-merging README.md
+CONFLICT (content): Merge conflict in README.md
+Recorded preimage for 'README.md'
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+```bash title="$ git status" {10,12}
+On branch feature-branch
+Your branch and 'origin/feature-branch' have diverged,
+and have 1 and 1 different commits each, respectively.
+  (use "git pull" to merge the remote branch into yours)
+
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+  both modified:   README.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+```txt title="$ cat README.md (before fix)"
+<<<<<<< HEAD
+# Title text updated locally
+=======
+# Title text updated remotely
+>>>>>>> dc45e0d
+```
+
+```txt title="$ cat README.md (after fix)"
+# Title text updated remotely and locally
+```
+
+```bash
+git add README.md
+git git commit -m "Merge remote updates into feature-branch"
+git push origin feature-branch
+```
+
+## Merge a feature branch back into the main branch
+
+```bash
+git checkout main
+git pull
+git merge feature-branch
+git push origin main
+```
+
+:::note
+This is usually not done locally, but by pushing the feature branch and then using _GitHub_ (`https://github.com/<username>/<repository_name>/pulls`) to open a PR to the main branch, get the changes code reviewed and performing the merge there.
+:::
+
+## Fix conflicts when merging a feature branch
+
+```bash title="$ git merge feature-branch" {2}
+Auto-merging README.md
+CONFLICT (content): Merge conflict in README.md
+Recorded preimage for 'README.md'
+Automatic merge failed; fix conflicts and then commit the result
+```
+
+```bash title="$ git status" {8,10}
+On branch main
+Your branch is up to date with 'origin/main'.
+
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+  both modified:   README.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+```txt title="$ cat README.md (before fix)"
+<<<<<<< HEAD
+# Title text updated remotely
+=======
+# Title text updated locally
+>>>>>>> feature-branch
+```
+
+```txt title="$ cat README.md (after fix)"
+# Title text updated remotely and locally
+```
+
+```bash
+git add README.md
+git git commit -m "Merge feature-branch into main"
+```
+
+## Update feature branch with the latest changes from main
+
+```bash
+git checkout main
+git pull
+git checkout feature-branch
+git rebase main
+git push --force-with-lease origin feature-branch
+```
+
+:::note
+
+- `git push --force` overwrites a remote branch with your local branch
+- `git push --force-with-lease` is a safer option that will not overwrite any work on the remote branch if more commits were added to the remote branch (by another team-member). It ensures you do not overwrite someone elses work by force pushing.
+
+:::
+
+## Fix conflicts when updating a feature branch with the latest changes from main
+
+```bash title="$ git rebase main" {2}
+Auto-merging README.md
+CONFLICT (content): Merge conflict in README.md
+error: could not apply 742e1f3... Update README
+Resolve all conflicts manually, mark them as resolved with
+"git add/rm <conflicted_files>", then run "git rebase --continue".
+You can instead skip this commit: run "git rebase --skip".
+To abort and get back to the state before "git rebase", run "git rebase --abort".
+Recorded preimage for 'README.md'
+Could not apply 742e1f3... Update README
+```
+
+```bash title="$ git status" {10,13}
+interactive rebase in progress; onto ceebf61
+Last command done (1 command done):
+   pick 742e1f3 Update README
+No commands remaining.
+You are currently rebasing branch 'feature-branch' on 'ceebf61'.
+  (fix conflicts and then run "git rebase --continue")
+  (use "git rebase --skip" to skip this patch)
+  (use "git rebase --abort" to check out the original branch)
+
+Unmerged paths:
+  (use "git restore --staged <file>..." to unstage)
+  (use "git add <file>..." to mark resolution)
+  both modified:   README.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+```txt title="$ cat README.md (before fix)"
+<<<<<<< HEAD
+# Title text updated remotely
+=======
+# Title text updated locally
+>>>>>>> 742e1f3
+```
+
+```txt title="$ cat README.md (after fix)"
+# Title text updated remotely and locally
+```
+
+```bash
+git add README.md
+git rebase --continue
+```
+
+## Remove all untracked files and directories
+
+```bash
+git status
+git clean -fd
+```
+
+## Switch branches without committing changes
+
+```bash
+git add file1 file2
+git stash
+git clean -fd
+git checkout another-branch
+git checkout -
+git stash list
+git stash apply
+```
+
+## Add changes to previous commit
+
+```bash
+git status
+git add -A
+git commit --amend
+```
+
+## Rename previous commit
+
+```bash
+git log
+git commit --amend
+```
+
+## Squash local commits before push
+
+```bash
+git rebase -i <last_commit_sha_before_my_local_commits>
+```
+
+```bash title="Edit in VIM mode by default..."
+r <my_first_commit_sha> Reword this commit message to my desired final message
+s <my_sencond_commit_sha> Squash this commit on previous commit
+s <my_third_commit_sha> Squash this commit on previous commit
+s <my_last_commit_sha> Squash this commit on previous commit
+
+```
+
+```bash
+git push origin feature-branch
+```
+
+## Move local (accidental) commits to a new branch
+
+```bash
+git checkout -b 'new-branch'
+git checkout original-branch
+git reset --hard <sha_before_accidental_commits>
+```
+
+## Undo last commit from local branch (and move changed files back into staging)
+
+```bash
+git reset HEAD~`
+```
+
+## Remove last commits from local branch (and discard all changes)
+
+```bash
+git reset --hard <sha_of_last_commit_to_keep>
+```
+
+## Recover from a hard reset (before it gets garbage collected)
+
+```bash
+git reflog
+git reset --hard <sha_of_commit_before_hard_reset>
+```
+
+## Undo a pushed commit and commit the reverted changes
+
+```bash
+git revert <commit_sha>
+```
+
+## Copy a single commit from one branch to another
+
+```bash
+git checkout branch-with-commit
+git log
+git checkout branch-without-the-commit
+git cherry-pick <sha_of_commit_to_add>
+```
+
+## Explore an older commit in 'detached HEAD' state
+
+```bash
+git log
+git checkout <sha_of_older_commit>
+git checkout -
+```
+
+## Edit an older commit
+
+```bash
+git rebase -i <last_commit_sha_before_the_one_i_want_to_edit>
+```
+
+```bash title="Edit in VIM mode by default..."
+e <sha_of_commit_i_want_to_edit> Edit this commit
+pick <my_sencond_commit_sha> Keep this commit as is
+pick <my_third_commit_sha> Keep this commit as is
+pick <my_last_commit_sha> Keep this commit as is
+```
+
+```bash
+git add -A
+git commit --amend
+git rebase --continue
+```
+
+## Delete a local branch
+
+```bash
+git branch -D local-branch-to-delete
+git branch -vv
+```
+
+## Delete a remote branch
+
+```bash
+git push origin --delete remote-branch-to-delete
+git branch -vv
+```
+
+## Remove a pushed file and add it to the ignored files list
+
+```bash
+echo '.env' >> .gitignore
+git rm --cached .env
+git add .gitignore
+git commit -m 'Ignore .env file'
+git push origin feature-branch
+```
+
+:::caution
+If this file contained any secrets they would still be visible in the git history. To completely wipe sensitive data use the [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/) tool.
+:::
+
+## Use versioning tags
+
+```bash
+git tag
+git tag v1.0.0
+git push origin v1.0.0
+git tag -d v1.0.0
+git push origin --delete v1.0.0
+```
+
+## Useful aliases
+
+```git title="~/.gitconfig"
+[alias]
+  lg = log --color --pretty=format:'[%cr] %C(bold blue)%an%Creset%Creset: %C(bold yellow)%h%Creset - %C(bold white)%s%Creset%d' --abbrev-commit
+  br = branch -a --format='%(color:bold yellow)%(HEAD)%(color:reset) [%(committerdate:relative)] %(color:bold white)%(refname:short)%(color:reset) (%(color:bold blue)%(authorname)%(color:reset): %(color:bold yellow)%(objectname:short)%(color:reset) - %(contents:subject))' --sort=-committerdate
+```
+
+```bash
+git lg
+git br
+```
+
+## Global git config
+
+```bash
+git config --global user.name 'John Doe'
+git config --global user.email 'john.doe@acme.com'
+git config --global rerere.enabled true
+git config --global init.defaultBranch main
+git config --global pull.rebase false
+git config --global diff.colorMoved zebra
+```
+
+```bash title="$ git config --global list"
+user.name=John Doe
+user.email=john.doe@acme.com
+rerere.enabled=true
+core.excludesfile=/Users/john.doe/.gitignore_global
+init.defaultbranch=main
+pull.rebase=false
+diff.colormoved=zebra
+alias.lg=log --color --pretty=format:'[%cr] %C(bold blue)%an%Creset%Creset: %C(bold yellow)%h%Creset - %C(bold white)%s%Creset%d' --abbrev-commit
+alias.br=branch -a --format='%(color:bold yellow)%(HEAD)%(color:reset) [%(committerdate:relative)] %(color:bold white)%(refname:short)%(color:reset) (%(color:bold blue)%(authorname)%(color:reset): %(color:bold yellow)%(objectname:short)%(color:reset) - %(contents:subject))' --sort=-committerdate
+```
+
+```bash title="cat ~/.gitconfig"
+[user]
+  name = John Doe
+  email = john.doe@acme.com
+[rerere]
+  enabled = true
+[core]
+  excludesfile = /Users/john.doe/.gitignore_global
+[init]
+  defaultBranch = main
+[pull]
+  rebase = false
+[diff]
+  colorMoved = zebra
+[alias]
+  lg = log --color --pretty=format:'[%cr] %C(bold blue)%an%Creset%Creset: %C(bold yellow)%h%Creset - %C(bold white)%s%Creset%d' --abbrev-commit
+  br = branch -a --format='%(color:bold yellow)%(HEAD)%(color:reset) [%(committerdate:relative)] %(color:bold white)%(refname:short)%(color:reset) (%(color:bold blue)%(authorname)%(color:reset): %(color:bold yellow)%(objectname:short)%(color:reset) - %(contents:subject))' --sort=-committerdate
+
+```
+
+## Configure multiple SSH keys for multiple Github accounts
+
+```bash
+eval "$(ssh-agent -s)"
+cd ~/.ssh
+
+ssh-keygen -t rsa -C "john.doe@personal.com" -f "id_rsa"
+pbcopy < ~/.ssh/id_rsa.pub
+ssh-add -K ~/.ssh/id_rsa
+
+ssh-keygen -t rsa -C "john.doe@work-company1.com" -f "work-company1"
+pbcopy < ~/.ssh/work-company1.pub
+ssh-add -K ~/.ssh/work-company1
+
+ssh-keygen -t rsa -C "john.doe@work-company2.com" -f "work-company2"
+pbcopy < ~/.ssh/work-company2.pub
+ssh-add -K ~/.ssh/work-company2
+
+ssh-add -l
+```
+
+```bash title="~/.ssh/config"
+Host *
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/id_rsa
+
+Host github.com-workcompany1
+  HostName github.com
+  User git
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/work-company1
+
+Host github.com-workcompany2
+  HostName github.com
+  User git
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/work-company2
+```
+
+```bash
+git config --global user.name 'John Doe'
+git config --global user.email 'john.doe@personal.com'
+
+git clone git@github.com:<username>/<repository_name>.git
+
+git clone git@github.com-workcompany1:<workcompany1>/<workcompany1_repository_name>.git
+cd workcompany1_repository_name
+git config user.name "John Doe"
+git config user.email "john.doe@work-company1.com"
+
+git clone git@github.com-workcompany2:<workcompany2>/<workcompany2_repository_name>.git
+cd workcompany2_repository_name
+git config user.name "John Doe"
+git config user.email "john.doe@work-company2.com"
+```

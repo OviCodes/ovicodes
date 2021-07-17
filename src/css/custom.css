@@ -1,0 +1,225 @@
+/* stylelint-disable docusaurus/copyright-header */
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* load custom google font */
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Press+Start+2P&display=swap');
+
+/* global variables */
+:root {
+  /* default Infima variable overrides */
+  --ifm-color-primary: #c792ea;
+  --ifm-color-primary-dark: #b772e4;
+  --ifm-color-primary-darker: #ae62e1;
+  --ifm-color-primary-darkest: #9632d8;
+  --ifm-color-primary-light: #d7b2f0;
+  --ifm-color-primary-lighter: #e0c2f3;
+  --ifm-color-primary-lightest: #f8f2fc;
+  --ifm-color-secondary: #7fdbca;
+  --ifm-color-secondary-dark: #64d3bf;
+  --ifm-color-secondary-darker: #56d0b9;
+  --ifm-color-secondary-darkest: #35bda4;
+  --ifm-color-secondary-light: #9ae3d5;
+  --ifm-color-secondary-lighter: #a8e6db;
+  --ifm-color-secondary-lightest: #d0f2ec;
+  --ifm-code-color: #555555;
+  --ifm-code-background: rgba(0, 0, 0, 0.05);
+  --ifm-code-font-size: 95%;
+
+  /* custom variables */
+  --ovicodes-color-black: #011627;
+  --ovicodes-color-black-dark: #010e1a;
+  --ovicodes-color-black-light: #555555;
+  --ovicodes-color-white: #ffffff;
+  --ovicodes-color-white-dark: #d6deeb;
+  --ovicodes-color-fuchsia: #c792ea;
+  --ovicodes-color-turquoise: #7fdbca;
+  --ovicodes-color-yellow: #ffe564;
+  --ovicodes-color-yellow-light: rgba(255, 229, 100, 0.3);
+  --ovicodes-color-blue: #82aaff;
+  --ovicodes-color-green: #addb67;
+  --ovicodes-font-family-display: 'Press Start 2P', cursive;
+  --ovicodes-font-family-cursive: 'Pacifico', cursive;
+}
+
+/* header section */
+.navbar {
+  --ifm-navbar-background-color: var(--ovicodes-color-black);
+}
+.navbar__link,
+footer {
+  font-family: var(--ovicodes-font-family-display);
+  font-size: 0.8em;
+  letter-spacing: -1px;
+}
+
+/* footer section */
+.footer {
+  --ifm-footer-background-color: var(--ovicodes-color-black);
+}
+
+/* content section */
+main > .container {
+  max-width: 100%;
+}
+
+/* sidebar */
+[aria-label='Collapse sidebar'] {
+  position: absolute !important;
+  top: 10px !important;
+  right: 0 !important;
+  border: none !important;
+  background: none !important;
+}
+[aria-label='Collapse sidebar'] svg *,
+[aria-label='Expand sidebar'] svg * {
+  fill: var(--ifm-color-secondary);
+}
+
+/* TOC */
+.doc-page .table-of-contents li {
+  margin: 1.2em 0.5em;
+  line-height: 1.5em;
+}
+.doc-page .table-of-contents a {
+  font-size: 1em;
+  color: #989fb1;
+}
+.doc-page .table-of-contents a.table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+}
+.doc-page .table-of-contents__link code {
+  color: var(--ovicodes-color-white);
+}
+
+.doc-page h1,
+.mdx-page h1 {
+  font-family: var(--ovicodes-font-family-display);
+  color: var(--ifm-color-secondary);
+}
+.doc-page h1 {
+  text-align: center;
+}
+
+.doc-page h2,
+.mdx-page h2 {
+  font-family: var(--ovicodes-font-family-cursive);
+  color: var(--ifm-color-primary);
+}
+
+.doc-page,
+.mdx-page {
+  color: var(--ovicodes-color-black-light);
+}
+
+.doc-page article header:after {
+  content: '';
+  display: block;
+  margin-bottom: 2em;
+  height: 400px;
+  width: 100%;
+  background: url(../../static/img/cover.jpg) center center no-repeat;
+  background-position: cover;
+}
+
+.admonition-tip {
+  background-color: var(--ovicodes-color-green);
+  border-color: var(--ovicodes-color-green);
+}
+.admonition-info {
+  background-color: var(--ovicodes-color-blue);
+  border-color: var(--ovicodes-color-blue);
+}
+.admonition-warning {
+  background-color: #ef7276;
+  border-color: #ef7276;
+}
+.admonition code {
+  border-color: var(--ovicodes-color-black) !important;
+}
+.admonition,
+.admonition code,
+.admonition a {
+  color: var(--ovicodes-color-black) !important;
+}
+.admonition code {
+  border-color: var(--ovicodes-color-black-light);
+}
+.admonition-icon svg {
+  fill: var(--ovicodes-color-black) !important;
+}
+
+.doc-page .docusaurus-highlight-code-line,
+.mdx-page .docusaurus-highlight-code-line {
+  background-color: var(--ovicodes-color-yellow-light);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+.navbar__title,
+a[class^='sidebarLogo_'] {
+  color: var(--ifm-color-primary) !important;
+  font-family: var(--ovicodes-font-family-display);
+}
+
+.codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
+.codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock- {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* dark theme only */
+
+html[data-theme='dark'] {
+  --ifm-background-color: var(--ovicodes-color-black-dark);
+  --ifm-code-background: var(--ifm-color-primary);
+}
+
+html[data-theme='dark'] .doc-page,
+html[data-theme='dark'] .mdx-page {
+  color: var(--ovicodes-color-white-dark);
+}
+
+html[data-theme='dark']
+  .doc-page
+  .codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
+html[data-theme='dark']
+  .mdx-page
+  .codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
+html[data-theme='dark']
+  .doc-page
+  .codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
+html[data-theme='dark']
+  .mdx-page
+  .codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock- {
+  background-color: var(--ovicodes-color-black) !important;
+}
+html[data-theme='dark'] code {
+  background-color: rgba(0, 0, 0, 0.025);
+  color: var(--ovicodes-color-white-dark);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+html[data-theme='dark'] .admonition code {
+  color: var(--ifm-alert-color);
+  border-color: var(--ifm-alert-color);
+}
+
+html[data-theme='dark'] .doc-page p strong,
+html[data-theme='dark'] .mdx-page p strong {
+  color: var(--ovicodes-color-white);
+}
+html[data-theme='dark'] .doc-page .docusaurus-highlight-code-line,
+html[data-theme='dark'] .mdx-page .docusaurus-highlight-code-line {
+  background-color: #a78e21;
+}
+
+html[data-theme='dark'] .doc-page .table-of-contents a {
+  font-size: 1em;
+  color: var(--ifm-color-secondary);
+}
+html[data-theme='dark'] .doc-page .table-of-contents a.table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+}

@@ -1,0 +1,172 @@
+---
+sidebar_position: 2
+---
+
+# Git-Flow
+
+The Git-Flow workflow defines a strict branching model designed around **project releases**.
+It provides a robust framework for managing larger projects by assigning **very specific roles to different branches** and defining how and when they should interact.
+
+Modern web apps are typically continuously delivered, not rolled back, and you don’t have to support multiple versions of the software running in the wild.
+
+:::caution
+The Git-Flow workflow was created around 2010 and unless you are building software that is explicitly versioned (or you need to support multiple versions of your software in the wild) you should consider a simpler git strategy such as [GitHub-Flow](./github-flow)!
+:::
+
+:::tip
+To prevent human error it's recommended to install and use the `git-flow` utility and not handle things manually.
+The manual approach is described here just for clarification.
+:::
+
+## Initialize a Git repo to use the Git-Flow workflow
+
+```bash
+# via the git-flow utility
+brew install git-flow
+git-flow init
+git push -u origin develop
+
+# manually
+git branch develop
+git push -u origin develop
+
+git branch
+* main
+  develop
+```
+
+## Start working on a feature and open a PR
+
+```bash
+# via the git-flow utility
+git flow feature start first-feature
+...
+git add -A
+git commit -m 'Add first feature'
+git flow feature publish first-feature
+
+# manually
+git checkout develop
+git pull
+git checkout -b feature/first-feature
+...
+git add -A
+git commit -m 'Add first feature'
+git push origin feature/first-feature
+```
+
+## Merge a feature branch into develop after it passes code review
+
+```bash
+# via the git-flow utility
+git flow feature finish first-feature
+git push origin develop
+git push origin --delete first-feature
+
+# manually
+git checkout develop
+git pull
+git merge --no-ff feature/first-feature
+git push origin develop
+git branch -D feature/first-feature
+git push origin --delete first-feature
+```
+
+## Create a release branch at a predetermined time for staging
+
+```bash
+# via the git-flow utility
+git flow release start '1.0.0'
+git flow release publish '1.0.0'
+
+# manually
+git checkout develop
+git pull
+git checkout -b release/v1.0.0
+git push origin release/v1.0.0
+```
+
+## Fix bugs found by QA on the release branch
+
+```bash
+# start fixing a bug
+git checkout release/v1.0.0
+git pull
+git checkout -b bugfix/bug-fix
+...
+git add -A
+git commit -m 'Add bug fix for release/1.0.0'
+git push origin bugfix/bug-fix
+
+# fix passed code review so we can be merged it into release
+git checkout release/1.0.0
+git pull
+git merge --no-ff bugfix/bug-fix
+git push origin release/1.0.0
+```
+
+## Finish the release
+
+```bash
+# via the git-flow utility
+git flow release finish '1.0.0'
+git push origin v1.0.0
+git push origin main
+git push origin develop
+
+# manually
+git checkout main
+git pull
+git merge --no-ff release/1.0.0
+git tag v1.0.0
+git push origin v1.0.0
+git push origin main
+git checkout develop
+git pull
+git merge --no-ff release/1.0.0
+git push origin develop
+git branch -D release/1.0.0
+```
+
+## Start a hotfix for a bug found in production and open a PR
+
+```bash
+# via the git-flow utility
+git flow hotfix start '1.0.1'
+git flow hotfix publish '1.0.1'
+
+# manually
+git checkout main
+git pull
+git checkout -b hotfix/1.0.1
+
+...
+git add -A
+git commit -m 'Add hotfix for production bug'
+git push origin hotfix/1.0.1
+```
+
+## Merge a hotfix branch into main and develop after it passes code review
+
+```bash
+# via the git-flow utility
+git flow hotfix finish '1.0.1'
+git push origin v1.0.1
+git push origin main
+git push origin develop
+git push origin --delete hotfix/1.0.1
+
+# manually
+git checkout main
+git pull
+git merge --no-ff hotfix/1.0.1
+git tag v1.0.1
+git push origin v1.0.1
+git push origin main
+git checkout develop
+git pull
+git merge --no-ff hotfix/1.0.1
+git push origin develop
+git branch -D hotfix/1.0.1
+git push origin --delete hotfix/1.0.1
+```
