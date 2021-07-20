@@ -5,7 +5,7 @@ sidebar_position: 3
 
 # NX
 
-Continue: https://nx.dev/react/tutorial/01-create-application
+[Nx](https://nx.dev/) is a smart and extensible build framework to help you architect, test, and build at any scale — integrating seamlessly with modern technologies and libraries while providing a robust CLI, caching, dependency management, and more.
 
 :::tip
 Once you understand the basics of NX using the terminal, you can also install the [NX VSCode Extension](https://marketplace.visualstudio.com/items?itemName=nrwl.angular-console) to speed things up!
@@ -225,7 +225,7 @@ View the run targets in `workspace.json` > `projects` > `targets`
   "executor": "@nrwl/workspace:run-commands",
   "options": {
     "commands": [
-      { "command": "yarn nx run foo:serve" },
+      { "command": "yarn nx run frontend:serve" },
       { "command": "yarn nx run api:serve" }
     ]
   }
@@ -271,7 +271,7 @@ const [products, setProducts] = React.useState<{
 });
 ```
 
-## Use Storybook
+## Use Storybook for developing components in isolation
 
 ```bash
 yarn add -D @nrwl/storybook
@@ -285,7 +285,7 @@ View existing projects (apps and libs) in `/workspace.json` > `projects`
 
 - Storybook URL: http://localhost:4400
 
-## Use Cypress
+## Use Cypress for e2e testing
 
 ```bash
 yarn nx run project_name-e2e:e2e --watch    # Development mode
@@ -295,3 +295,15 @@ yarn nx run project_name-e2e:e2e --headless # CI mode
 :::tip Projects
 View existing projects (apps and libs) in `/workspace.json` > `projects`
 :::
+
+## Use Jest for unit testing
+
+```bash
+yarn nx run project_name:test
+```
+
+:::tip Projects
+View existing projects (apps and libs) in `/workspace.json` > `projects`
+:::
+
+<!-- Continue: https://nx.dev/react/tutorial/01-create-application -->

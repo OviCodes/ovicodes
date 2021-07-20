@@ -48,17 +48,32 @@
 /* header section */
 .navbar {
   --ifm-navbar-background-color: var(--ovicodes-color-black);
+  border-bottom: 1px solid var(--ifm-color-primary);
 }
-.navbar__link,
-footer {
+.navbar__toggle svg {
+  color: var(--ovicodes-color-white);
+}
+.navbar__link {
   font-family: var(--ovicodes-font-family-display);
   font-size: 0.8em;
   letter-spacing: -1px;
+  color: var(--ifm-color-secondary);
+}
+.navbar__link:hover {
+  color: var(--ovicodes-color-white);
+}
+.navbar__link--active {
+  color: var(--ovicodes-color-white);
 }
 
 /* footer section */
 .footer {
   --ifm-footer-background-color: var(--ovicodes-color-black);
+  font-family: var(--ovicodes-font-family-display);
+  font-size: 0.8em;
+  letter-spacing: -1px;
+  padding: 16px;
+  border-top: 1px solid var(--ifm-color-primary);
 }
 
 /* content section */
@@ -67,6 +82,11 @@ main > .container {
 }
 
 /* sidebar */
+.menu__list {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85em;
+  line-height: 1em;
+}
 [aria-label='Collapse sidebar'] {
   position: absolute !important;
   top: 10px !important;
@@ -78,11 +98,23 @@ main > .container {
 [aria-label='Expand sidebar'] svg * {
   fill: var(--ifm-color-secondary);
 }
+.menu--responsive button {
+  box-shadow: 0px 0px 10px 0px rgb(0 0 0 / 25%);
+  border-radius: 99999px;
+  height: 65px;
+  width: 65px;
+}
 
 /* TOC */
+.doc-page .table-of-contents {
+  margin-top: -25px;
+}
 .doc-page .table-of-contents li {
+  font-family: var(--ifm-font-family-monospace);
   margin: 1.2em 0.5em;
-  line-height: 1.5em;
+  line-height: 1.2em;
+  letter-spacing: -1px;
+  font-weight: semibold;
 }
 .doc-page .table-of-contents a {
   font-size: 1em;
@@ -106,8 +138,32 @@ main > .container {
 
 .doc-page h2,
 .mdx-page h2 {
-  font-family: var(--ovicodes-font-family-cursive);
+  font-family: var(--ovicodes-font-family-display);
+  padding-top: 1.5em;
+  font-size: 1em;
+  letter-spacing: -1px;
   color: var(--ifm-color-primary);
+}
+
+.doc-page .markdown li,
+.mdx-page li {
+  list-style-type: none;
+  line-height: 1.4em;
+  margin-bottom: 1em;
+  position: relative;
+}
+.doc-page .markdown li:before,
+.mdx-page li:before {
+  content: '▪';
+  color: var(--ifm-color-secondary);
+  position: absolute;
+  left: -1em;
+}
+
+.doc-page main img,
+.mdx-page main img {
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: 2px;
 }
 
 .doc-page,
@@ -123,6 +179,8 @@ main > .container {
   width: 100%;
   background: url(../../static/img/cover.jpg) center center no-repeat;
   background-position: cover;
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: 2px;
 }
 
 .admonition-tip {
@@ -169,6 +227,41 @@ a[class^='sidebarLogo_'] {
 .codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
 .codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock- {
   background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* about page */
+
+.page-about__title {
+  text-align: center;
+  font-size: 48px;
+  margin-bottom: 50px;
+}
+.page-about__hero {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 50px;
+}
+.page-about-hero__image {
+  flex: 1;
+  max-width: 33%;
+}
+.page-about-hero__description {
+  flex: 3;
+  margin: 0 0 0 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.page-about__gallery {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -10px;
+}
+
+.gallery__image {
+  width: calc(33% - 20px);
+  margin: 10px;
 }
 
 /* dark theme only */
@@ -220,6 +313,40 @@ html[data-theme='dark'] .doc-page .table-of-contents a {
   font-size: 1em;
   color: var(--ifm-color-secondary);
 }
-html[data-theme='dark'] .doc-page .table-of-contents a.table-of-contents__link--active {
+html[data-theme='dark']
+  .doc-page
+  .table-of-contents
+  a.table-of-contents__link--active {
   color: var(--ifm-color-primary);
+}
+
+html[data-theme='dark'] .doc-page main img,
+html[data-theme='dark'] .mdx-page main img {
+  border: 1px solid var(--ifm-color-secondary);
+  border-radius: 2px;
+}
+
+html[data-theme='dark'] .doc-page article header:after {
+  border: 1px solid var(--ifm-color-secondary);
+  border-radius: 2px;
+}
+
+/* mobile */
+
+@media (max-width: 996px) {
+  .page-about__hero {
+    flex-direction: column;
+    align-items: center;
+  }
+  .page-about-hero__image {
+    max-width: 100%;
+    margin-bottom: 50px;
+  }
+  .page-about-hero__description {
+    margin: 0;
+  }
+
+  .gallery__image {
+    width: calc(50% - 22px);
+  }
 }

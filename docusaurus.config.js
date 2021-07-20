@@ -1,5 +1,7 @@
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 
+require('dotenv').config()
+
 module.exports = {
   /*** Site metadata ******************************************************************************/
   title: 'OviCodes',
@@ -104,6 +106,14 @@ module.exports = {
     footer: {
       style: 'dark',
       copyright: `Copyright © ${new Date().getFullYear()} Ovidiu Ispas`,
+    },
+    algolia: {
+      apiKey: process.env.SEARCH_API_KEY,
+      indexName: process.env.SEARCH_INDEX_NAME,
+      appId: process.env.APPLICATION_ID,
+      contextualSearch: false,
+      searchParameters: {},
+      // placeholder: 'Search...',
     },
   },
 }
