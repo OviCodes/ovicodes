@@ -6,7 +6,7 @@
  */
 
 /* load custom google font */
-@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 /* global variables */
 :root {
@@ -42,7 +42,6 @@
   --ovicodes-color-blue: #82aaff;
   --ovicodes-color-green: #addb67;
   --ovicodes-font-family-display: 'Press Start 2P', cursive;
-  --ovicodes-font-family-cursive: 'Pacifico', cursive;
 }
 
 /* header section */
@@ -74,6 +73,9 @@
   letter-spacing: -1px;
   padding: 16px;
   border-top: 1px solid var(--ifm-color-primary);
+}
+.footer .container {
+  padding: 0;
 }
 
 /* content section */
@@ -131,6 +133,7 @@ main > .container {
 .mdx-page h1 {
   font-family: var(--ovicodes-font-family-display);
   color: var(--ifm-color-secondary);
+  font-size: 2em;
 }
 .doc-page h1 {
   text-align: center;
@@ -147,23 +150,32 @@ main > .container {
 
 .doc-page .markdown li,
 .mdx-page li {
-  list-style-type: none;
+  list-style-type: square;
   line-height: 1.4em;
   margin-bottom: 1em;
-  position: relative;
-}
-.doc-page .markdown li:before,
-.mdx-page li:before {
-  content: '▪';
-  color: var(--ifm-color-secondary);
-  position: absolute;
-  left: -1em;
 }
 
 .doc-page main img,
 .mdx-page main img {
   border: 1px solid var(--ifm-color-primary);
   border-radius: 2px;
+}
+
+.doc-page blockquote,
+.mdx-page blockquote {
+  border-left: 0;
+  position: relative;
+  padding-left: 3em;
+}
+.doc-page blockquote:before,
+.mdx-page blockquote:before {
+  content: '"';
+  font-family: var(--ovicodes-font-family-display);
+  color: var(--ifm-color-secondary);
+  font-size: 2em;
+  position: absolute;
+  left: 0.3em;
+  top: 0.2em;
 }
 
 .doc-page,
@@ -334,6 +346,13 @@ html[data-theme='dark'] .doc-page article header:after {
 /* mobile */
 
 @media (max-width: 996px) {
+  .doc-page h1,
+  .mdx-page h1 {
+    font-size: 1.5em;
+  }
+  .doc-page article header:after {
+    height: 140px;
+  }
   .page-about__hero {
     flex-direction: column;
     align-items: center;
