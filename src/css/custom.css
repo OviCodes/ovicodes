@@ -28,6 +28,7 @@
   --ifm-code-color: #555555;
   --ifm-code-background: rgba(0, 0, 0, 0.05);
   --ifm-code-font-size: 95%;
+  --doc-sidebar-width: 350px !important;
 
   /* custom variables */
   --ovicodes-color-black: #011627;
@@ -56,13 +57,13 @@
   font-family: var(--ovicodes-font-family-display);
   font-size: 0.8em;
   letter-spacing: -1px;
-  color: var(--ifm-color-secondary);
+  color: var(--ovicodes-color-white);
 }
 .navbar__link:hover {
-  color: var(--ovicodes-color-white);
+  color: var(--ifm-color-primary);
 }
 .navbar__link--active {
-  color: var(--ovicodes-color-white);
+  color: var(--ifm-color-secondary);
 }
 
 /* footer section */
@@ -86,7 +87,7 @@ main > .container {
 /* sidebar */
 .menu__list {
   font-family: var(--ifm-font-family-monospace);
-  font-size: 0.85em;
+  font-size: 12px;
   line-height: 1em;
 }
 [aria-label='Collapse sidebar'] {
@@ -138,7 +139,6 @@ main > .container {
 .doc-page h1 {
   text-align: center;
 }
-
 .doc-page h2,
 .mdx-page h2 {
   font-family: var(--ovicodes-font-family-display);
@@ -146,6 +146,12 @@ main > .container {
   font-size: 1em;
   letter-spacing: -1px;
   color: var(--ifm-color-primary);
+}
+.doc-page h3,
+.mdx-page h3 {
+  font-family: var(--ovicodes-font-family-display);
+  color: var(--ifm-color-secondary);
+  font-size: 0.8em;
 }
 
 .doc-page .markdown li,
@@ -228,6 +234,16 @@ main > .container {
   display: block;
   margin: 0 calc(-1 * var(--ifm-pre-padding));
   padding: 0 var(--ifm-pre-padding);
+}
+
+.inserted-sign,
+.inserted.line {
+  color: #31a931 !important;
+}
+.deleted-sign,
+.deleted.line {
+  color: #ef7276 !important;
+  /* color: rgb(173, 219, 103) !important; */
 }
 
 .navbar__title,
@@ -318,7 +334,11 @@ html[data-theme='dark'] .mdx-page p strong {
 }
 html[data-theme='dark'] .doc-page .docusaurus-highlight-code-line,
 html[data-theme='dark'] .mdx-page .docusaurus-highlight-code-line {
-  background-color: #a78e21;
+  background-color: rgba(127, 219, 202, 0.2) !important;
+}
+html[data-theme='dark'] .inserted-sign,
+html[data-theme='dark'] .inserted.line {
+  color: rgb(173, 219, 103) !important;
 }
 
 html[data-theme='dark'] .doc-page .table-of-contents a {

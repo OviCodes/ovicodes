@@ -60,7 +60,7 @@ module.exports = {
       items: [
         {
           type: 'doc',
-          docId: 'home',
+          docId: 'architecture/home',
           position: 'left',
           label: 'Docs',
         },

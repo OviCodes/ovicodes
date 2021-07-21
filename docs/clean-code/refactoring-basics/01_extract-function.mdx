@@ -1,0 +1,304 @@
+---
+sidebar_position: 1
+---
+
+# Extract Function
+
+## Description
+
+- one of the most common refactorings
+- extracting well named functions from a larger block of code **separates intention from implementation** so you won't have to spend effort again looking at that fragment to figure out what it's doing
+- any function with more than half-a-dozen lines of code starts to smell and can be broken down into smaller functions
+- it shouldn't be unusual to have many functions that contain a single line of code
+
+:::tip
+Code comments right above a piece of code are usually a sign that what follows should probably be extracted into a separate function with a descriptive name.
+:::
+
+:::note
+The purpose of any function should leap right out at you by only reading it's name.
+:::
+
+## Example
+
+```js title="Before refactoring"
+function printBill(table) {
+  const RESTAURANT_NAME = "Mario's Pizzeria"
+  let price = 0
+
+  // calculate price
+  for (const o of table.orders) {
+    price += o.cost
+  }
+
+  // print details
+  console.log(`Restaurant: ${RESTAURANT_NAME}`)
+  console.log(`Table Number: ${table.number}`)
+  console.log(`Price: ${price}`)
+}
+```
+
+```js title="Input"
+const table = {
+  number: 3,
+  orders: [
+    { item: 'Pizza Margherita', cost: 10 },
+    { item: 'Glass of Beer', cost: 5 },
+  ],
+}
+```
+
+```text title="Output"
+Restaurant: Mario's Pizzeria
+Table Number: 3
+Price: 15
+```
+
+## Refactoring
+
+### Step 1
+
+- Create a new function and name it after its intent (eg. `printRestaurantTableAndPrice`).
+
+```diff {4}
+function printBill(table) {
+    // ...
+
+    // print details
+    console.log(`Restaurant: ${RESTAURANT_NAME}`)
+    console.log(`Table Number: ${table.number}`)
+    console.log(`Price: ${price}`)
+}
+
++ function printRestaurantTableAndPrice() {
++
++ }
+```
+
+### Step 2
+
+- Copy the extracted code from the source function into the new target function.
+
+```diff {5-7}
+function printBill(table) {
+    // ...
+
+    // print details
+    console.log(`Restaurant: ${RESTAURANT_NAME}`)
+    console.log(`Table Number: ${table.number}`)
+    console.log(`Price: ${price}`)
+
+    function printRestaurantTableAndPrice() {
++       console.log(`Restaurant: ${RESTAURANT_NAME}`)
++       console.log(`Table Number: ${table.number}`)
++       console.log(`Price: ${price}`)
+    }
+}
+```
+
+- **Scan the extracted code for all references to variables** that are local in scope to the source function and follow the next steps.
+
+### Step 3
+
+- If a variable will only be used inside the extracted function but it is declared outside of it (eg. `RESTAURANT_NAME` from the `printRestaurantTableAndPrice` extracted function) move it's declaration into the extracted function.
+
+```diff {16}
+function printBill(table) {
+-   const RESTAURANT_NAME = "Mario's Pizzeria"
+    let price = 0
+
+    // calculate price
+    for (const o of table.orders) {
+        price += o.cost
+    }
+
+    // ...
+}
+
+function printRestaurantTableAndPrice() {
++   const RESTAURANT_NAME = "Mario's Pizzeria"
+
+    console.log(`Restaurant: ${RESTAURANT_NAME}`)
+    console.log(`Table Number: ${table.number}`)
+    console.log(`Price: ${price}`)
+}
+```
+
+### Step 4
+
+- Pass any variables that will also be used outside of the extracted function but are **not being assigned values inside it** as parameters to the extracted function (eg. `table` and `price` from the `printRestaurantTableAndPrice` extracted function).
+
+```diff {2,5-6,16-17}
+function printBill(table) {
+  let price = 0
+
+  // calculate price
+  for (const o of table.orders) {
+    price += o.cost
+  }
+
+  // ...
+}
+
++ function printRestaurantTableAndPrice(table, price) {
+    const RESTAURANT_NAME = "Mario's Pizzeria"
+
+    console.log(`Restaurant: ${RESTAURANT_NAME}`)
+    console.log(`Table Number: ${table.number}`)
+    console.log(`Price: ${price}`)
+}
+```
+
+### Step 5
+
+- If there's any variable that will be used outside of an extracted function and **it is being assigned a value inside of it** (eg. `price` from the `calculatePrice` extracted function) _treat the extracted function as a query_ and return that variable as it's result.
+
+```diff {4,13}
+function printBill(table) {
+    // ...
+
+    printRestaurantTableAndPrice(table, price)
+}
+
+function printRestaurantTableAndPrice(table, price) {
+    // ...
+}
+
+function calculatePrice(table) {
+    for (const o of table.orders) {
+      price += o.cost
+    }
+}
+```
+
+- First, if that variable is declared or initialized outside of the extracted function, slide it inside next to its use.
+
+```diff
+function printBill(table) {
+-   let price = 0
+
+    // ...
+}
+
+function calculatePrice(table) {
++   let price = 0
+
+    for (const o of table.orders) {
+      price += o.cost
+    }
+}
+```
+
+- Then return it and replace the original code with a call to the extracted function, storing the result in the original variable.
+
+```diff
+function printBill(table) {
+
+-  // calculate price
+-  for (const o of table.orders) {
+-    price += o.cost
+-  }
+
++  const price = calculatePrice(table)
+
+  printRestaurantTableAndPrice(table, price)
+}
+
+function printRestaurantTableAndPrice(table, price) {
+    ...
+}
+
+function calculatePrice(table) {
+    let price = 0
+
+    for (const o of table.orders) {
+      price += o.cost
+    }
+
++   return price
+}
+```
+
+- Optionally, for better consistency, rename it according to your coding style inside the extracted function.
+
+```diff {2,5,8}
+function calculatePrice(table) {
+    let result = 0
+
+    for (const o of table.orders) {
+      result += o.cost
+    }
+
+    return result
+}
+```
+
+### Step 6
+
+Replace the extracted code in the source function with a call to the extracted function.
+
+```diff
+function printBill(table) {
+    // ...
+
+-   // print details
+-   console.log(`Restaurant: ${RESTAURANT_NAME}`)
+-   console.log(`Table Number: ${table.number}`)
+-   console.log(`Price: ${price}`)
+
++   printRestaurantTableAndPrice(table, price)
+}
+
+function printRestaurantTableAndPrice(table, price) {
+    ...
+}
+
+```
+
+:::tip
+Use your IDE's "Search in all files" feature to find other code that is _the same or similar_ to the code you just extracted and use [Replace Inline Code with Function Call](./replace-inline-code-with-function-call) to call the new function.
+:::
+
+## Result
+
+```js title="Before refactoring"
+function printBill(table) {
+  const RESTAURANT_NAME = "Mario's Pizzeria"
+  let price = 0
+
+  // calculate price
+  for (const o of table.orders) {
+    price += o.cost
+  }
+
+  // print details
+  console.log(`Restaurant: ${RESTAURANT_NAME}`)
+  console.log(`Table Number: ${table.number}`)
+  console.log(`Price: ${price}`)
+}
+```
+
+```js title="After refactoring"
+function printBill(table) {
+  const price = calculatePrice(table)
+  printRestaurantTableAndPrice(table, price)
+}
+
+function calculatePrice(table) {
+  let result = 0
+
+  for (const o of table.orders) {
+    result += o.cost
+  }
+
+  return result
+}
+
+function printRestaurantTableAndPrice(table, price) {
+  const RESTAURANT_NAME = "Mario's Pizzeria"
+
+  console.log(`Restaurant: ${RESTAURANT_NAME}`)
+  console.log(`Table Number: ${table.number}`)
+  console.log(`Price: ${price}`)
+}
+```

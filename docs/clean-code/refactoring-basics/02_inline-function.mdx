@@ -1,0 +1,129 @@
+---
+sidebar_position: 2
+---
+
+# Inline Function
+
+## Description
+
+- sometimes **short function bodies can be just as descriptive as their names** so instead of adding more clarity these functions just add needless indirection in the code
+- other times, **a group of functions can be badly factored** and you must inline them all into one big function before you can extract them again properly
+
+:::warning
+If the function is _polymorphhic_ (it is a _class method_ and there are subclasses that _override_ it), _recursive_ or has _multiple return points_ you shouldn't use this refactoring to inline it!
+:::
+
+## Example
+
+```js title="Before refactoring"
+function getDeliveryRecord(customer) {
+  const record = []
+
+  createDeliveryRecord(record, customer)
+
+  return record
+}
+
+function createDeliveryRecord(record, customer) {
+  record.push(customer.name)
+  record.push(customer.street)
+  record.push(customer.zipCode)
+}
+```
+
+```js title="Input"
+customer: {
+    name: 'Mr. Luigi',
+    street: '532 Oakland St.',
+    zipCode: 'NY 10028'
+}
+```
+
+```json title="Output"
+["Mr. Luigi", "532 Oakland St.", "NY 10028"]
+```
+
+## Refactoring
+
+### Step 1
+
+- Use your IDE's _"Search in all files"_ feature to find all callers of this function.
+
+### Step 2
+
+- Check that this function isn't polymorphic, recursive or has multiple return points.
+
+### Step 3
+
+- Replace each call with the function's body.
+
+```diff
+function getDeliveryRecord(customer) {
+  const record = []
+
+- createDeliveryRecord(record, customer)
++ record.push(customer.name)
++ record.push(customer.street)
++ record.push(customer.zipCode)
+
+  return record
+}
+
+function createDeliveryRecord(record, customer) {
+  record.push(customer.name)
+  record.push(customer.street)
+  record.push(customer.zipCode)
+}
+```
+
+### Step 4
+
+- Remove the function definition.
+
+```diff
+function getDeliveryRecord(customer) {
+  const record = []
+
+  record.push(customer.name)
+  record.push(customer.street)
+  record.push(customer.zipCode)
+
+  return record
+}
+
+- function createDeliveryRecord(record, customer) {
+-   record.push(customer.name)
+-   record.push(customer.street)
+-   record.push(customer.zipCode)
+- }
+```
+
+## Result
+
+```js title="Before refactoring"
+function getDeliveryRecord(customer) {
+  const record = []
+
+  createDeliveryRecord(record, customer)
+
+  return record
+}
+
+function createDeliveryRecord(record, customer) {
+  record.push(customer.name)
+  record.push(customer.street)
+  record.push(customer.zipCode)
+}
+```
+
+```js title="After refactoring"
+function getDeliveryRecord(customer) {
+  const record = []
+
+  record.push(customer.name)
+  record.push(customer.street)
+  record.push(customer.zipCode)
+
+  return record
+}
+```

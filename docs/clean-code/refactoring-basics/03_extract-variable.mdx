@@ -1,0 +1,204 @@
+---
+sidebar_position: 3
+---
+
+# Extract Variable
+
+## Description
+
+- **break down more complex and hard to read expressions** by using local variables
+- make inspecting partial values (via debugger or print statements) easier
+
+:::warning
+Be careful not to extract as variables expressions that cause _side-effects_ (eg. that contain unary operators like `++` and `--` or mutating array methods like `reverse`, `splice`, etc.) - if there is any code between the place where you extract these to and the place where you extract them from that needs their mutated variables' "old" values, this will generate hard to find bugs!
+:::
+
+:::tip
+If the local variable is also meaningful in a broader context, outside of the function where you are doing the refactoring, then you can consider making the name more available by using [Extract Function](./extract-function) or [Replace Temp with Query](../refactoring-encapsulation/replace-temp-with-query).
+:::
+
+## Example
+
+```js title="Before refactoring"
+function price(order) {
+  // price is base price - quantity discount + shipping
+  return (
+    order.quantity * order.itemPrice -
+    Math.max(0, order.quantity - 500) * order.itemPrice * 0.05 +
+    Math.min(order.quantity * order.itemPrice * 0.1, 100)
+  )
+}
+```
+
+```js title="Input"
+const order = {
+  quantity: 1000,
+  itemPrice: 10,
+}
+```
+
+```text title="Output"
+9850
+```
+
+## Refactoring
+
+### Step 1
+
+- Check that the expression you want to extract as a variable does not cause side-effects.
+
+### Step 2
+
+- Declare an immutable variable (`const`) and set it to a copy of the expression that you want to replace.
+
+- `basePrice` variable extraction:
+
+```diff {7,9}
+function price(order) {
+  // price is base price - quantity discount + shipping
+
++ const basePrice = order.quantity * order.itemPrice
+
+  return (
+    order.quantity * order.itemPrice -
+    Math.max(0, order.quantity - 500) * order.itemPrice * 0.05 +
+    Math.min(order.quantity * order.itemPrice * 0.1, 100)
+  )
+}
+```
+
+- `quantityDiscount` variable extraction:
+
+```diff {9}
+function price(order) {
+  // price is base price - quantity discount + shipping
+
+  const basePrice = order.quantity * order.itemPrice
++ const quantityDiscount = Math.max(0, order.quantity - 500) * order.itemPrice * 0.05
+
+  return (
+    order.quantity * order.itemPrice -
+    Math.max(0, order.quantity - 500) * order.itemPrice * 0.05 +
+    Math.min(order.quantity * order.itemPrice * 0.1, 100)
+  )
+}
+```
+
+- `shipping` variable extraction:
+
+```diff {11}
+function price(order) {
+  // price is base price - quantity discount + shipping
+
+  const basePrice = order.quantity * order.itemPrice
+  const quantityDiscount = Math.max(0, order.quantity - 500) * order.itemPrice * 0.05
++ const shipping = Math.min(order.quantity * order.itemPrice * 0.1, 100)
+
+  return (
+    order.quantity * order.itemPrice -
+    Math.max(0, order.quantity - 500) * order.itemPrice * 0.05 +
+    Math.min(order.quantity * order.itemPrice * 0.1, 100)
+  )
+}
+```
+
+### Step 3
+
+- Replace the original expression with the new variable.
+
+- `basePrice` variable extraction:
+
+```diff
+function price(order) {
+  // price is base price - quantity discount + shipping
+
+  const basePrice = order.quantity * order.itemPrice
+  const quantityDiscount = Math.max(0, order.quantity - 500) * order.itemPrice * 0.05
+- const shipping = Math.min(order.quantity * order.itemPrice * 0.1, 100)
++ const shipping = Math.min(basePrice * 0.1, 100)
+
+  return (
+-   order.quantity * order.itemPrice -
++   basePrice -
+    Math.max(0, order.quantity - 500) * order.itemPrice * 0.05 +
+-   Math.min(order.quantity * order.itemPrice * 0.1, 100)
++   Math.min(basePrice * 0.1, 100)
+  )
+}
+```
+
+- `quantityDiscount` variable extraction:
+
+```diff
+function price(order) {
+  // price is base price - quantity discount + shipping
+
+  const basePrice = order.quantity * order.itemPrice
+  const quantityDiscount = Math.max(0, order.quantity - 500) * order.itemPrice * 0.05
+  const shipping = Math.min(basePrice * 0.1, 100)
+
+  return (
+    basePrice -
+-   Math.max(0, order.quantity - 500) * order.itemPrice * 0.05 +
++   quantityDiscount +
+    Math.min(basePrice * 0.1, 100)
+  )
+}
+```
+
+- `shipping` variable extraction:
+
+```diff
+function price(order) {
+  // price is base price - quantity discount + shipping
+
+  const basePrice = order.quantity * order.itemPrice
+  const quantityDiscount = Math.max(0, order.quantity - 500) * order.itemPrice * 0.05
+  const shipping = Math.min(basePrice * 0.1, 100)
+
+  return (
+    basePrice -
+    quantityDiscount +
+-   Math.min(basePrice * 0.1, 100)
++   shipping
+  )
+}
+```
+
+- finish by removing the needless comment as the code became self-documenting:
+
+```diff
+function price(order) {
+- // price is base price - quantity discount + shipping
+
+  const basePrice = order.quantity * order.itemPrice
+  const quantityDiscount = Math.max(0, order.quantity - 500) * order.itemPrice * 0.05
+  const shipping = Math.min(basePrice * 0.1, 100)
+
+  return basePrice - quantityDiscount + shipping
+}
+```
+
+## Result
+
+```js title="Before refactoring"
+function price(order) {
+  // price is base price - quantity discount + shipping
+  return (
+    order.quantity * order.itemPrice -
+    Math.max(0, order.quantity - 500) * order.itemPrice * 0.05 +
+    Math.min(order.quantity * order.itemPrice * 0.1, 100)
+  )
+}
+```
+
+```js title="After refactoring"
+function price(order) {
+  const basePrice = order.quantity * order.itemPrice
+  const quantityDiscount =
+    Math.max(0, order.quantity - 500) * order.itemPrice * 0.05
+  const shipping = Math.min(basePrice * 0.1, 100)
+
+  return basePrice - quantityDiscount + shipping
+}
+```

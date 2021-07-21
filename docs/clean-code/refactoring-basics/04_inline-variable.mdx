@@ -1,0 +1,82 @@
+---
+sidebar_position: 4
+---
+
+# Inline Variable
+
+## Description
+
+- sometimes **a variable's name does not communicate more than the expression that is assigned to it**
+- other times, a variable may also **get in the way of refactoring neighboring code** and you can inline it to make that refactoring easier
+
+:::warning
+Be careful not to inline variables who's assigned expressions cause _side-effects_ (eg. that contain unary operators like `++` and `--` or mutating array methods like `reverse`, `splice`, etc.) - if there is any code between the place where they are declared and the place where you inline them to that needs their mutated variables' values, this will generate hard to find bugs!
+:::
+
+## Example
+
+```js title="Before refactoring"
+function deliveryInProgress(order) {
+  const orderNotDelivered = order.status !== 'delivered'
+
+  return orderNotDelivered
+}
+```
+
+```js title="Input"
+const order = {
+  status: 'shipping',
+  // ...
+}
+```
+
+```text title="Output"
+true
+```
+
+## Refactoring
+
+### Step 1
+
+- Check that the expression assigned to the variable you want to inline does not cause side-effects.
+
+### Step 2
+
+- Find all references to the variable that you want to inline (eg. `orderNotDelivered`) and replace them with the right side of the assignment.
+
+```diff {2}
+function deliveryInProgress(order) {
+  const orderNotDelivered = order.status !== 'delivered'
+
+- return orderNotDelivered
++ return order.status !== 'delivered'
+}
+```
+
+### Step 3
+
+- Remove the declaration of the variable that you want to inline (eg. `orderNotDelivered`).
+
+```diff
+function deliveryInProgress(order) {
+- const orderNotDelivered = order.status !== 'delivered'
+
+  return order.status !== 'delivered'
+}
+```
+
+## Result
+
+```js title="Before refactoring"
+function deliveryInProgress(order) {
+  const orderNotDelivered = order.status !== 'delivered'
+
+  return orderNotDelivered
+}
+```
+
+```js title="After refactoring"
+function deliveryInProgress(order) {
+  return order.status !== 'delivered'
+}
+```
