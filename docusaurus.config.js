@@ -113,7 +113,6 @@ module.exports = {
       appId: process.env.APPLICATION_ID,
       contextualSearch: false,
       searchParameters: {},
-      // placeholder: 'Search...',
     },
   },
 }

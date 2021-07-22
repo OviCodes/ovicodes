@@ -29,6 +29,7 @@
   --ifm-code-background: rgba(0, 0, 0, 0.05);
   --ifm-code-font-size: 95%;
   --doc-sidebar-width: 350px !important;
+  --ifm-menu-link-sublist-icon-filter: opacity(0.25);
 
   /* custom variables */
   --ovicodes-color-black: #011627;
@@ -255,6 +256,24 @@ a[class^='sidebarLogo_'] {
 .codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
 .codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock- {
   background-color: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid var(--ovicodes-color-white-dark);
+  font-size: 0.85em !important;
+}
+
+/* line numbers */
+.prism-code {
+  counter-reset: line-number;
+}
+.prism-code[class*='language-'] .token-line::before {
+  counter-increment: line-number;
+  content: counter(line-number);
+  margin-right: calc(var(--ifm-pre-padding) * 1.5);
+  text-align: right;
+  min-width: 1.5rem;
+  display: inline-block;
+  opacity: 0.3;
+  position: sticky;
+  left: var(--ifm-pre-padding);
 }
 
 /* about page */
@@ -317,6 +336,7 @@ html[data-theme='dark']
   .mdx-page
   .codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock- {
   background-color: var(--ovicodes-color-black) !important;
+  border: 1px solid var(--ovicodes-color-black-light);
 }
 html[data-theme='dark'] code {
   background-color: rgba(0, 0, 0, 0.025);
