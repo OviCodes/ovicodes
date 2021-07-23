@@ -344,6 +344,10 @@ html[data-theme='dark'] .doc-page p strong,
 html[data-theme='dark'] .mdx-page p strong {
   color: var(--ovicodes-color-white);
 }
+html[data-theme='dark'] .doc-page .admonition p strong,
+html[data-theme='dark'] .mdx-page .admonition p strong {
+  color: inherit;
+}
 html[data-theme='dark'] .doc-page .docusaurus-highlight-code-line,
 html[data-theme='dark'] .mdx-page .docusaurus-highlight-code-line {
   background-color: rgba(127, 219, 202, 0.2) !important;

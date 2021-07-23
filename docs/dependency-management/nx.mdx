@@ -1,6 +1,5 @@
 ---
-title: NX
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 # NX
@@ -104,14 +103,43 @@ Options:
 
 ## Run an app
 
-- via NX command: `yarn nx run <app_name>:<target>` (build, serve, lint, test, etc.)
-- via generated package.json scripts: `yarn start` (will run against `workspace.json` > `defaultProject`)
+- use `yarn nx run <app_name>:serve` to run the app in development (watch) mode. React App URL: http://localhost:4200
+- use `yarn nx run <app_name>:<target>` to run different app targets (build, serve, lint, test, etc.)
 
 :::tip Targets
 View the run targets in `workspace.json` > `projects` > `targets`
 :::
 
-- React App URL: http://localhost:4200
+- for convenience the following `package.json` scripts are already generated, and will run against `workspace.json` > `defaultProject` so you can use commands like `yarn start`, `yarn test`, `yarn lint`, etc.
+
+```json title="package.json"
+{
+  ...
+  "scripts": {
+    "nx": "nx",
+    "start": "nx serve",
+    "build": "nx build",
+    "test": "nx test",
+    "lint": "nx workspace-lint && nx lint",
+    "e2e": "nx e2e",
+    "affected:apps": "nx affected:apps",
+    "affected:libs": "nx affected:libs",
+    "affected:build": "nx affected:build",
+    "affected:e2e": "nx affected:e2e",
+    "affected:test": "nx affected:test",
+    "affected:lint": "nx affected:lint",
+    "affected:dep-graph": "nx affected:dep-graph",
+    "affected": "nx affected",
+    "format": "nx format:write",
+    "format:write": "nx format:write",
+    "format:check": "nx format:check",
+    "update": "nx migrate latest",
+    "workspace-generator": "nx workspace-generator",
+    "dep-graph": "nx dep-graph",
+    "help": "nx help"
+  }
+}
+```
 
 ## Install an external npm package
 
@@ -288,8 +316,8 @@ View existing projects (apps and libs) in `/workspace.json` > `projects`
 ## Use Cypress for e2e testing
 
 ```bash
-yarn nx run project_name-e2e:e2e --watch    # Development mode
-yarn nx run project_name-e2e:e2e --headless # CI mode
+yarn nx run project_name-e2e:e2e --watch    # Watch mode (development)
+yarn nx run project_name-e2e:e2e --headless # Headless mode (CI)
 ```
 
 :::tip Projects
@@ -299,11 +327,58 @@ View existing projects (apps and libs) in `/workspace.json` > `projects`
 ## Use Jest for unit testing
 
 ```bash
-yarn nx run project_name:test
+yarn nx run project_name:test            # Run all tests and exit (CI)
+yarn nx run project_name:test --watch    # Watch mode (development)
 ```
 
 :::tip Projects
 View existing projects (apps and libs) in `/workspace.json` > `projects`
 :::
 
-<!-- Continue: https://nx.dev/react/tutorial/01-create-application -->
+## Use Eslint for linting
+
+```bash
+yarn nx run project_name:lint            # Lint files
+yarn nx run project_name:lint --fix      # Fix auto-fixable errors
+```
+
+:::tip Projects
+View existing projects (apps and libs) in `/workspace.json` > `projects`
+:::
+
+## Scale-up using the 'affected' commands
+
+Run different targets only on the apps and libs that were affected by the current file changes (**compared to previous commit**)
+
+```bash
+yarn nx affected:dep-graph  # Show the dependency graph of affected projects
+yarn nx affected:apps       # Print what apps were affected
+yarn nx affected:libs       # Print what libs were affected
+yarn nx affected:build      # Build all affected projects
+yarn nx affected:e2e        # Run end to end tests on all affected projects
+yarn nx affected:test       # Ron unit tests on all affected projects
+yarn nx affected:lint       # Lint all affected projects
+```
+
+:::tip Base branch
+
+- Set the default base branch for all affected commands in `/nx.json` > `affected` > `defaultBase`
+- Specify a different base branch for an affected command: `yarn nx affected:dep-graph --base=develop`
+
+:::
+
+## Speed-up commands execution using distributed cloud caching
+
+You can run the `yarn nx connect-to-nx-cloud` at any time (if you didn't already enable distributed cloud caching during the initial setup).
+
+## Update workspace packages and configs
+
+```bash
+yarn nx migrate latest                            # update package.json and generate migrations.json
+yarn                                              # install update packages
+yarn nx migrate --run-migrations=migrations.json  # update config files
+```
+
+:::note
+The `/migrations.json` file should be checked into version control so that other team members can update their local installation.
+:::

@@ -1,0 +1,28 @@
+---
+sidebar_position: 1
+---
+
+# Yarn
+
+[Yarn](https://classic.yarnpkg.com/lang/en/) (version 1.x) is considered by many the most reliable package manager in the JavaScript ecosystem.
+
+## Basic commands
+
+```bash
+npm i -g yarn                               # install Yarn globally
+yarn init                                   # add yarn to a project
+yarn                                        # install all packages from package.json and generaye yarn.lock file
+yarn add <npm_package_name>                 # add a package to the project as a runtime dependency
+yarn add <npm_package_name> --dev           # add a package to the project as a dev dependency
+yarn upgrade <npm_package_name>[@<version>] # upgrade a package to the latest (or to a specific) version
+yarn delete <npm_package_name>              # remove a package from the project
+yarn <script_command_name>                  # run a command from the script section of package.json
+```
+
+## Commit the lock file
+
+:::important
+The generated `yarn.lock` file should always be commited to version control (just like the `package-lock.json` file if you would be using `npm` instead of `yarn`).
+
+**Some people who do not understand package management (and/or Git) argue agains this - please don't be one of those people!**
+:::
