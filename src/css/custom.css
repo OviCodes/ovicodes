@@ -253,8 +253,8 @@ a[class^='sidebarLogo_'] {
   font-family: var(--ovicodes-font-family-display);
 }
 
-.codeBlockTitle_\*,
-.codeBlockLines_\* {
+[class^='codeBlockTitle'],
+[class^='codeBlockLines'] {
   background-color: rgba(0, 0, 0, 0.05) !important;
   border: 1px solid var(--ovicodes-color-white-dark);
   font-size: 0.85em !important;
@@ -323,18 +323,10 @@ html[data-theme='dark'] .mdx-page {
   color: var(--ovicodes-color-white-dark);
 }
 
-html[data-theme='dark']
-  .doc-page
-  .codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
-html[data-theme='dark']
-  .mdx-page
-  .codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
-html[data-theme='dark']
-  .doc-page
-  .codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock-,
-html[data-theme='dark']
-  .mdx-page
-  .codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock- {
+html[data-theme='dark'] .doc-page [class^='codeBlockTitle'],
+html[data-theme='dark'] .mdx-page [class^='codeBlockTitle'],
+html[data-theme='dark'] .doc-page [class^='codeBlockLines'],
+html[data-theme='dark'] .mdx-page [class^='codeBlockLines'] {
   background-color: var(--ovicodes-color-black) !important;
   border: 1px solid var(--ovicodes-color-black-light);
 }
@@ -407,5 +399,8 @@ html[data-theme='dark'] .doc-page article header:after {
 
   .gallery__image {
     width: calc(50% - 22px);
+  }
+  .prism-code[class*='language-'] .token-line::before {
+    display: none;
   }
 }
