@@ -164,8 +164,7 @@ main > .container {
 
 .doc-page main img,
 .mdx-page main img {
-  border: 1px solid var(--ifm-color-primary);
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .doc-page blockquote,
@@ -197,9 +196,8 @@ main > .container {
   height: 400px;
   width: 100%;
   background: url(../../static/img/cover.jpg) center center no-repeat;
-  background-position: cover;
-  border: 1px solid var(--ifm-color-primary);
-  border-radius: 2px;
+  background-size: cover;
+  border-radius: 4px;
 }
 
 .admonition-tip {
@@ -370,13 +368,11 @@ html[data-theme='dark']
 
 html[data-theme='dark'] .doc-page main img,
 html[data-theme='dark'] .mdx-page main img {
-  border: 1px solid var(--ifm-color-secondary);
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 html[data-theme='dark'] .doc-page article header:after {
-  border: 1px solid var(--ifm-color-secondary);
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 /* mobile */
