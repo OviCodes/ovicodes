@@ -200,6 +200,21 @@ main > .container {
   border-radius: 4px;
 }
 
+.menu--responsive svg,
+.menu--responsive span {
+  display: none;
+}
+.menu--responsive button {
+  background: var(--ifm-color-secondary) url(../../static/img/book.svg) center
+    center no-repeat;
+  background-size: 66%;
+}
+.menu--responsive.menu--show button {
+  background: var(--ifm-color-secondary) url(../../static/img/cancel.svg) center
+    center no-repeat;
+  background-size: 43%;
+}
+
 .admonition-tip {
   background-color: var(--ovicodes-color-green);
   border-color: var(--ovicodes-color-green);
@@ -298,15 +313,38 @@ a[class^='sidebarLogo_'] {
   justify-content: center;
 }
 
+.page-about__subtitle {
+  margin: 3em 0;
+  text-align: center;
+}
+
 .page-about__gallery {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 -10px;
+  margin: 0 -10px 3em;
 }
 
 .gallery__image {
   width: calc(33% - 20px);
   margin: 10px;
+  filter: grayscale(1);
+}
+
+.page-about__button {
+  background-color: var(--ifm-color-primary);
+  color: white;
+  margin: 0 auto;
+  display: block;
+  width: 300px;
+  text-align: center;
+  font-family: var(--ovicodes-font-family-display);
+  font-size: 1em;
+  letter-spacing: -1px;
+  padding: 10px;
+}
+.page-about__button:hover {
+  text-decoration: none;
+  color: white;
 }
 
 /* dark theme only */

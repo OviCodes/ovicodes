@@ -59,15 +59,15 @@ module.exports = {
       },
       items: [
         {
-          type: 'doc',
-          docId: 'architecture/home',
-          position: 'left',
-          label: 'Docs',
-        },
-        {
-          to: '/about',
+          to: '/',
           position: 'left',
           label: 'About Me',
+        },
+        {
+          type: 'doc',
+          docId: 'architecture/12-factor-apps',
+          position: 'left',
+          label: 'Docs',
         },
         {
           type: 'search',
