@@ -83,6 +83,7 @@
 /* content section */
 main > .container {
   max-width: 100%;
+  margin-bottom: 40vh;
 }
 
 /* sidebar */
@@ -281,12 +282,17 @@ a[class^='sidebarLogo_'] {
   counter-increment: line-number;
   content: counter(line-number);
   margin-right: calc(var(--ifm-pre-padding) * 1.5);
+  margin-left: -1rem;
   text-align: right;
   min-width: 1.5rem;
   display: inline-block;
-  opacity: 0.3;
   position: sticky;
-  left: var(--ifm-pre-padding);
+  left: 0;
+  padding-left: 0;
+  padding-right: 5px;
+  background-color: #f2f2f2 !important;
+  border-right: 1px solid #bcbcc1;
+  color: #bcbcc1;
 }
 
 /* about page */
@@ -370,6 +376,11 @@ html[data-theme='dark'] code {
   background-color: rgba(0, 0, 0, 0.025);
   color: var(--ovicodes-color-white-dark);
   border-color: rgba(255, 255, 255, 0.25);
+}
+html[data-theme='dark'] .prism-code[class*='language-'] .token-line::before {
+  background-color: var(--ovicodes-color-black) !important;
+  color: var(--ifm-color-secondary);
+  border-right: 1px solid var(--ovicodes-color-black-light);
 }
 html[data-theme='dark'] .admonition code {
   color: var(--ifm-alert-color);

@@ -1,7 +1,7 @@
 ---
 title: 12 Factor Apps
 id: 12-factor-apps
-ssidebar_position: 1
+sidebar_position: 1
 ---
 
 # Twelve-Factor Apps
@@ -25,33 +25,165 @@ The majority of the docs on this website revolve around the idea of implementing
 
 - An app's codebase (eg. source code, assets, provisioning script, etc.) must be tracked in revision control (`Git`) and can only live in a single repository.
   If an app's code is spread across multiple repositories it's a _distributed system_ not an app. In such a case, each repository of a distributed system can be a Twelve Factors App.
-- Multiple apps should not share (duplicate) the same code. Shared code must be factored into libraries, which will be included through a dependency manager (`npm`).
-- There will be different deployments of an app (development, staging, production, etc.) but all deployments of an app will be built from the same codebase of the app.
+- Multiple apps (eg. frontend, backend api, etc.) **can** live in the same repository (_monorepo_) but they must not duplicate or share code directly via relative file imports. Shared code must be factored into libraries (that can optionally live in the same monorepo as well). These libraries should be created as packages and included through a **dependency manager** (eg. `npm`, `yarn`, etc.) or in case of libraries stored in the same monorepo through **path aliases** (by configuring resolve aliases inside `webpack.config.js` for _React_, paths in `tsconfig.json` for _TypeScript_, or using module aliases via the `module-alias` npm package for _Node_).
+- There will be different deployments of an app (_development_, _staging_, _production_, etc.) but all deployments of an app will be built from the same codebase of the app.
 - The code in the repository is used to produce a single build, which is combined with environment-specific configuration to produce an immutable release (a release where no changes can be made, including to the configuration) that can then be deployed to a cloud environment.
 
-:::note
-For brevity these examples assume `npm` is used as a package manager but the same effects can be achieved by using the equivalent `yarn` commands.
-:::
+```bash title="Example: Create a new app codebase and track it in revision control"
+mkdir 12fapp
+cd 12fapp
+git init
+git remote add origin git@github.com:<username>/12fapp.git
+git branch -M main
+echo '# 12 Factor App' > README.md
+git add README.md
+git commit -m "Initial commit"
+git push -u origin main
+```
 
 ## 2. Dependencies
 
 > Explicitly declare and isolate dependencies
 
 - Only code that is unique and relevant to the purpose of the app should live in the app's codebase.
-- For supporting packages use a a dependency declaration manifest (`package.json`) and a dependency isolation tool (`npm`).
-- Never rely on implicit existence of system-wide packages (eg. installed using `npm i -g`) - scope all packages into the directory containing the app.
-- Never rely on implicit existence of system tools (`curl`, `ImageMagick`) - in non-containerized environments use a configuration management tool (`Chef`, `Puppet`, `Ansible`) to install them and in a containerized environment do this in the `Dockerfile`.
-- The only installed prerequisites required for a developer to run the app will be the language runtime (`node`) and the dependency manager (`npm`).
-- To set up everything needed to run the app a deterministic build command should be enaugh (`npm install`).
+- For supporting packages use a a dependency declaration manifest (`package.json`) and a dependency isolation tool (`npm` + `package-lock.json`, `yarn` + `yarn.lock`).
+- Never rely on implicit existence of system-wide packages (eg. installed using `npm i -g` or `yarn global add`) - scope all packages into the directory containing the app.
+- Never rely on implicit existence of system tools (eg. `ImageMagick`) - if needed, in non-containerized environments use a configuration management tool (eg. `Chef`, `Puppet`, `Ansible`, etc.) to install them and in a containerized environment do this in the `Dockerfile` (This provisioning scripts should also be added to the apps codebase and tracked in revision control).
+- To install every dependency needed to run the app, a deterministic build command should be enaugh (eg. `npm install`, `yarn`, etc).
+
+```js title="Example: Create an app (index.js) that uses the MongoDB NodeJS Driver as a dependency"
+const { MongoClient } = require('mongodb')
+
+const client = new MongoClient('mongodb://localhost:27017')
+console.log('Connecting to MongoDB...')
+client
+  .connect()
+  .then(() => console.log('Connected!'))
+  .catch((err) => console.log(err))
+  .finally(() => client.close())
+```
+
+```bash title="Add index.js to revision control and initialize Yarn"
+git add index.js
+git commit -m "Add main script"
+git push origin main
+yarn init -y # initialize the Yarn package manager in this codebase to be able to install dependencies
+```
+
+```bash {3} title="git status"
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	package.json
+```
+
+```json title="cat package.json"
+{
+  "name": "12fapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "John Doe <john@doe.com>",
+  "license": "MIT"
+}
+```
+
+```bash title="Install the MongoDB NodeJS Driver dependency"
+yarn add mongodb                          # install dependency
+echo '/node_modules' > .gitignore         # don't add node_modules to revision control
+```
+
+```bash {3-5} title="git status"
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.gitignore
+	package.json
+	yarn.lock
+```
+
+```text title="cat .gitignore"
+/node_modules
+```
+
+```diff title="cat package.json"
+{
+  "name": "12fapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "John Doe <john@doe.com>",
+  "license": "MIT",
++  "dependencies": {
++    "mongodb": "^4.1.0"
++  }
+}
+```
+
+```text title="cat yarn.lock"
+# THIS IS AN AUTOGENERATED FILE. DO NOT EDIT THIS FILE DIRECTLY.
+# yarn lockfile v1
+
+...
+
+mongodb@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.1.0.tgz#f491de5d52003f41dffbc6ebfd8b95be21174d63"
+  integrity sha512-Gx9U9MsFWgJ3E0v4oHAdWvYTGBznNYPCkhmD/3i/kPTY/URnPfHD5/6VoKUFrdgQTK3icFiM9976hVbqCRBO9Q==
+  dependencies:
+    bson "^4.4.0"
+    denque "^1.5.0"
+    mongodb-connection-string-url "^1.0.1"
+  optionalDependencies:
+    saslprep "^1.0.0"
+
+...
+```
+
+```bash title="Add the changes to revision control"
+git add .gitignore yarn.lock package.json
+git commit -m "Add MongoDB"
+git push origin main
+```
+
+```bash title="Run the app"
+docker run -p 27017:27017 -d mongo  # start a MongoDB Docker container
+node index.js                       # run the app
+
+> Connecting to MongoDB...
+> Connected!
+```
 
 ## 3. Config
 
 > Store config in the environment
 
-- In the scope of Twelve Factor Apps, configs are resource handles (DB, Redis, and other backing services), credentials to external services (Amazon S3, Postmark, etc.) and everything else (eg. state settings such as DEBUG) that is likely to vary between deploys (development, staging, production environments). Config that is NOT different between deploys (eg. `tsconfig.json`, `.prettierrc.js`, etc.) is out of the scope of this rule.
-- Never store configs as constants in the code, use env vars instead (eg. use the `dotenv` npm package, and for local development an `.env` file that is added to `.gitignore` - `Docker` supports loading this file at runtime)
+- In the scope of Twelve Factor Apps, configs are resource handles (DB, Redis, and other backing services URIs), credentials to external services (Amazon S3, Postmark, etc.) and everything else (eg. state settings such as DEBUG) that is likely to vary between deploys (_development_, _staging_ and _production_ environments). Config that is NOT different between deploys (eg. `tsconfig.json`, `.prettierrc.js`, etc.) is out of the scope of this rule.
+- Never store configs as constants in the code, use environmental variables instead. For local development, use the `dotenv` npm package and an `.env` file that is added to `.gitignore` (In a containerized environment, `Docker` supports loading this file at runtime).
 - Once you have deployed your application to a delivery platform (staging, production), use the delivery platform's mechanism for managing environment variables.
 - Do not batch configs into named groups often called “environments” (`.env.development`, `.env.staging`, `.env.production`, etc.) and store them in version control because this does not scale well and it also permits accidentally commiting secrets to the repository.
+
+```bash title="Example: Add the dotenv package as an app dependency and store the MobgoDB URI in an .env file not be tracked in revision control"
+yarn add dotenv
+echo 'MONGO_URI=mongodb://localhost:27017' > .env
+echo '.env' >> .gitignore
+```
+
+```diff title="Update the app to inject variables from the .env file into the local development environment and read the MongoDB URI from the environment"
++require('dotenv').config()
+const { MongoClient } = require('mongodb')
+
+-const client = new MongoClient('mongodb://localhost:27017')
++const client = new MongoClient(process.env.MONGO_URI)
+console.log('Connecting to MongoDB...')
+client
+  .connect()
+  .then(() => console.log('Connected!'))
+  .catch((err) => console.log(err))
+  .finally(() => client.close())
+```
+
+```bash title="Add the changes to revision control"
+git add .gitignore yarn.lock package.json
+git commit -m "Use environment variables"
+git push origin main
+```
 
 ## 4. Backing Services
 
@@ -61,25 +193,220 @@ For brevity these examples assume `npm` is used as a package manager but the sam
 - Both locally-managed and third party services are considered by the app as attached resources (accessed via a URL or other locator/credentials stored in the config).
 - A deploy of the twelve-factor app should be able to swap out a local MySQL database with one managed by a third party (such as Amazon RDS) or a local SMTP server with a third-party SMTP service (such as Postmark) by only changing the resource handle in the config and without any changes to the app's code.
 
+```bash title="Example: Using the Atlas cloud database as a backing service in the production deploy instead of the self managed MondoDB used for local development"
+# Development environment
+MONGO_URI=mongodb://localhost:27017 node index.js # the env var is not even needed here on the command line because it gets picked up automatically from the .env file in dev
+
+# Production environment
+MONGO_URI=mongodb://cluster0-shard-00-00-a1bx2.mongodb.net:27017 node index.js # use a different connection string for prod without changing anything in the code
+```
+
 ## 5. Build, Release, Run
 
 > Strictly separate build and run stages
 
-- The **build stage** transform the source code from the app's codebase using a version of the code at a commit specified by the deployment process, fetches vendors dependencies, and compiles binaries and assets into a bundle known as a build.
-- The **release stage** takes the output of the build stage and combines it with the deploy's current config to create a release that has a unique ID (`SemVer`).
-- The **run stage** provisions a runtime environment via scripts (using a tool such as `Ansible` or `Docker`) and runs the relase.
+- The **build stage** transform the source code from the app's codebase using a version of the code at a specific commit, fetches vendors dependencies, and compiles binaries and assets into a bundle known as a build.
+- The **release stage** takes the output of the build stage and combines it with the deploy's current config to create a release. Each release should have a unique ID (`SemVer`).
+- The **run stage** provisions a runtime environment via scripts (using a tool such as `Ansible`, `Docker`, etc.) and runs the relase.
 - The three stages are strictly separated because it's impossible to make changes to the code at runtime and have a way to propagate those changes back to the build stage. In such a case you must add the code changes to the repository, re-build, create a new release and run the new release.
 - Builds are initiated by developers (manually or automatically - on code push, by opening a PR, etc. - using a tool for CI/CD such as `Jenkins` or `CircleCI`), while runtime execution can also happen independent of developers (in cases such as a server reboot, or a crashed process being restarted by the process manager) so it should be kept to as few moving parts as possible.
+
+```docker title="Example: Containerize the app by first creating an app Dockerfile"
+FROM node:alpine
+WORKDIR /srv
+COPY . .
+RUN yarn
+CMD [ "node", "index.js" ]
+```
+
+```docker title="Create a .dockerignore file"
+/node_modules # don't add node_modules to the image
+.env          # the .env file will be injected at runtime in the local development environment via docker-compose
+```
+
+```diff title="Update the app to keep running for a minute"
+require('dotenv').config()
+const { MongoClient } = require('mongodb')
+
+const client = new MongoClient(process.env.MONGO_URI)
+console.log('Connecting to MongoDB...')
+client
+  .connect()
+  .then(() => console.log('Connected!'))
+  .catch((err) => console.log(err))
+  .finally(() => client.close())
+
++setTimeout(() => console.log('App terminated.'), 60000) // keep the app running for a minute
+```
+
+```bash title="Commit everything and add a new release tag in revision control"
+git add Dockerfile .dockerignore index.js
+git commit -m "Initial release"
+git push origin main
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+```bash title="Create a build image based on the Dockerfile definition"
+docker build -t my_org_name/12fapp:1.0.0 .
+```
+
+```yml title="Add a docker-compose.yml file to create a release from the build image and configure the runtime environment for local development"
+version: '3'
+services:
+  app:
+    image: my_org_name/12fapp:1.0.0
+    env_file:
+      - .env
+    depends_on:
+      - db
+  db:
+    image: mongo
+    ports:
+      - 27017:27017
+```
+
+```bash title="Add the docker-compose.yml file to revision control"
+git add docker-compose.yml
+git commit -m "Add docker-compose file for local development"
+git push origin main
+```
+
+```diff title="Update the MONGO_URI hostname inside the .env file to be the docker DB container's name"
+-MONGO_URI=mongodb://localhost:27017
++MONGO_URI=mongodb://12fapp_db_1:27017
+```
+
+```bash title="Run the app and the MongoDB backing service and inspect the app's logs"
+docker-compose up -d
+> Creating network "12fapp_default" with the default driver
+> Creating 12fapp_db_1 ... done
+> Creating 12fapp_app_1 ... done
+
+docker ps
+> CONTAINER ID   IMAGE                    COMMAND                  CREATED         STATUS         PORTS                                           NAMES
+> 78d30f41694f   my_org_name/12fapp:1.0.0 "docker-entrypoint.s…"   3 seconds ago   Up 2 seconds                                                   12fapp_app_1
+> 033e1f9bd301   mongo                    "docker-entrypoint.s…"   4 seconds ago   Up 3 seconds   0.0.0.0:27017->27017/tcp, :::27017->27017/tcp   12fapp_db_1
+
+docker logs 12fapp_app_1
+> Connecting to MongoDB...
+> Connected!
+
+# after one minute...
+
+docker ps
+> CONTAINER ID   IMAGE                    COMMAND                  CREATED         STATUS         PORTS                                           NAMES
+> 033e1f9bd301   mongo                    "docker-entrypoint.s…"   1 minute ago   Up 3 seconds   0.0.0.0:27017->27017/tcp, :::27017->27017/tcp   12fapp_db_1
+
+docker logs 12fapp_app_1
+> Connecting to MongoDB...
+> Connected!
+> App terminated.
+```
 
 ## 6. Processes
 
 > Execute the app as one or more stateless processes
 
 - Stateless services scale horizontally by simply adding more instances of that service.
-- The filesystem or memory of the app's process can only be used as a brief single-transaction cache, but the app shouldn't rely on any state to be stored locally (on disk or in memory) and to be available on a future request or job because chances are high that a future request will be served by a different process.
-- Even when running only one process, a restart (triggered by code deploy, config change, or the execution environment relocating the process to a different physical location) will usually wipe out all local state (filesystem and memory).
+- The file system or memory of the app's process can only be used as a brief single-transaction cache, but the app shouldn't rely on any state to be stored locally (on disk or in memory) and to be available on a future request or job because chances are high that a future request will be served by a different process.
+- Even when running only one process, a restart (triggered by code deploy, config change, or the execution environment relocating the process to a different physical location) will usually wipe out all local state (file system and memory).
 - Do not rely on "sticky sessions" (caching user session data in memory of the app's process and expecting future requests from the same visitor to be routed to the same process). Session state data is a good candidate for a datastore that offers time-expiration (`Redis`).
-- Do not persist data locally (persistent data must be stored in a stateful backing service, typically a database).
+- Do not persist data in the app's local file system - for local development that uses containerized apps you can setup persistent volumes and for the production environment data can be stored in a stateful backing service, typically a cloud storage service (eg. `Amazon S3`) or a database.
+
+```js {20,24,30} title="Example: Create an app (index.js) and proxy requests to local file system in dev environment and remote cloud storage in production"
+const express = require('express')
+const proxy = require('express-http-proxy')
+const fileUpload = require('express-fileupload')
+const path = require('path')
+
+const app = express()
+
+// upload form
+app.get('/', (_, res) => {
+  res.send(`
+    <form action="/images" enctype="multipart/form-data" method="post">
+      <input type="file" name="uploadedImage" /><br /><br />
+      <input type="submit" value="Upload" />
+    </form>
+  `)
+})
+
+// CLOUD_STORAGE_URL should be defined in prod and undefined in local dev env
+const handleImageRequests = process.env.CLOUD_STORAGE_URL
+  ? // production: proxy the serve and upload image requests to remote cloud storage
+    proxy(process.env.CLOUD_STORAGE_URL, {
+      proxyReqPathResolver: (req) => process.env.CLOUD_STORAGE_URL + req.path,
+    })
+  : // development: serve images from local file system
+    express.static(path.join(__dirname, 'public/images'))
+app.use('/images', handleImageRequests)
+
+// add uploaded files to req.files
+app.use(fileUpload())
+// development: upload images to local file system
+app.post('/images', (req, res) => {
+  if (!req.files) return res.status(400).send('No files were uploaded!')
+  const { uploadedImage } = req.files
+  uploadedImage.mv(`public/images/${uploadedImage.name}`, (err) => {
+    if (err) return res.status(500).send(err)
+    res.send(
+      `File uploaded to <a href="/images/${uploadedImage.name}">/images/${uploadedImage.name}</a>`
+    )
+  })
+})
+
+app.listen(8080, () => {
+  console.log('Server listening on port 8080...')
+})
+```
+
+```docker title="Create a .gitignore file"
+/node_modules   # don't add node_modules to revision control
+/public/images  # don't add the local file system images upload directory to revision control
+.env            # don't add the .env file to revision control
+```
+
+```docker title="Containerize the app by creating an app Dockerfile"
+FROM node:alpine
+WORKDIR /srv
+COPY . .
+RUN yarn
+EXPOSE 8080
+CMD [ "node", "index.js" ]
+```
+
+```docker title="Create a .dockerignore file"
+/node_modules   # don't add node_modules to the image
+/public/images  # don't add the local file system images upload directory to the image
+.env            # the .env file will be injected at runtime in the local development environment via docker-compose
+```
+
+```docker {9-10} title="Add a docker-compose.yml file with persistent storage for local development"
+version: '3'
+services:
+  app:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./public/images:/srv/public/images
+```
+
+```bash title="Add changes to revision control and run the app"
+git add -A
+git commit -m "Add image uploads and previews"
+git push origin main
+
+docker-compose up
+> Creating network "12fapp_default" with the default driver
+> Building app
+> Creating 12fapp_app_1 ... done
+> Attaching to 12fapp_app_1
+> app_1  | Server listening on port 8080...
+```
 
 ## 7. Port Binding
 
@@ -88,12 +415,214 @@ For brevity these examples assume `npm` is used as a package manager but the sam
 - Domain names and associated IP addresses can be assigned on-the-fly, so the app must be identifiable to the network by port number only, not by a domain name.
 - The app is completely self-contained and does not rely on a webserver (`Apache`, `Tomcat`, etc.) to be injected into the execution environment. It exports HTTP as a service by binding to a port, and listening to requests coming in on that port.
 
+```js {8} title="Example: Create an app (index.js) that exports HTTP as a service by binding to a port and returns a greeting on requests"
+const http = require('http')
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' })
+  res.end('Hello World!\n')
+})
+
+server.listen(8080)
+console.log('Server listening on port 8080...')
+```
+
+```docker {3} title="Containerize the app by creating an app Dockerfile"
+FROM node:alpine
+COPY index.js .
+EXPOSE 8080
+CMD [ "node", "index.js" ]
+```
+
+```bash title="Create a build image based on the Dockerfile definition"
+docker build -t my_org_name/12fapp:2.0.0 .
+```
+
+```bash {2} title="Run the app using docker"
+docker build -t my_org_name/12fapp:2.0.0 .
+docker run -d --name 12fapp_app_1 -p 8080:8080 my_org_name/12fapp:2.0.0
+
+curl http://localhost:8080
+> Hello World!
+
+docker stop 12fapp_app_1
+> 12fapp_app_1
+```
+
+```docker {5,6} title="Create a docker-compose.yml file"
+version: '3'
+services:
+  app:
+    image: my_org_name/12fapp:2.0.0
+    ports:
+      - '8080:8080'
+```
+
+```bash title="Run the app using docker-compose"
+docker-compose up -d
+> Ceating 12fapp_app_1 ... done
+
+curl http://localhost:8080
+> Hello World!
+
+docker-compose down
+> Stopping 12fapp_app_1 ... done
+> Removing 12fapp_app_1 ... done
+> Removing network 12fapp_default
+```
+
+```bash title="Add changes to revision control"
+git add -A
+git commit -m "Add greeting on requests"
+git push origin main
+```
+
 ## 8. Concurrency
 
 > Scale out via the process model
 
 - An individual VM can only grow so large, so the app must be able to span multiple processes running on multiple physical machines (horizontal scale) instead of only adding more memory or CPU on a single instance (vertical scale).
 - Inside the container the app should not run as a daemon or in a background, and must rely on the operating system's process manager to manage output streams, respond to crashed processes, and handle user-initiated restarts and shutdowns.
+
+```js {11} title="Example: Create an app inside a nodejs directory (node/index.js) that exports HTTP as a service by binding to a port dynamically and returns a server greeting on requests"
+const http = require('http')
+const os = require('os')
+
+const port = process.env.PORT || 8080
+const serverAddress = os.networkInterfaces()['eth0']
+  ? os.networkInterfaces()['eth0'][0]['address']
+  : 'unknown'
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' })
+  res.end(`Hello from ${serverAddress}!\n`)
+})
+
+server.listen(port)
+console.log(`Server listening on port ${port}...`)
+```
+
+```docker title="Containerize the app by creating an app Dockerfile (nodejs/Dockerfile)"
+FROM node:alpine
+COPY index.js .
+EXPOSE 8080
+CMD [ "node", "index.js" ]
+```
+
+```bash {6-7} title="Build the app and run it on two servers"
+cd nodejs
+docker build -t my_org_name/12fapp_node:1.0.0 .
+
+# port binding is not needed from the containers to the host because external requests will be handled by nginx
+# the containers will only be accessible from other docker containers (nginx) not from a public network
+docker run -d --name=12fapp_app_1 my_org_name/12fapp_node:1.0.0
+docker run -d --name=12fapp_app_2 my_org_name/12fapp_node:1.0.0
+
+docker ps
+> CONTAINER ID   IMAGE                           COMMAND                  CREATED          STATUS          PORTS      NAMES
+> 89ea022de135   my_org_name/12fapp_node:1.0.0   "docker-entrypoint.s…"   12 seconds ago   Up 11 seconds   8080/tcp   12fapp_app_2
+> cae837748a4a   my_org_name/12fapp_node:1.0.0   "docker-entrypoint.s…"   24 seconds ago   Up 23 seconds   8080/tcp   12fapp_app_1
+
+docker logs 12fapp_app_1
+> Server listening on port 8080...
+docker logs 12fapp_app_2
+> Server listening on port 8080...
+```
+
+```nginx {2,3} title="Create a nginx configuration file inside a nginx directory (nginx/nginx.conf) to proxy requests to each of the running servers"
+upstream app {
+    server 12fapp_app_1:8080;
+    server 12fapp_app_2:8080;
+}
+
+server {
+  location / {
+    proxy_pass http://app;
+  }
+}
+```
+
+```docker title="Containerize nginx by creating an app Dockerfile"
+FROM nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+```
+
+```bash {6} title="Run nginx and proxy requests to the app on the running servers"
+cd nginx
+docker build -t my_org_name/12fapp_nginx:1.0.0 .
+
+# map port 8080 on the host to 80 (nginx default port) from the container
+# link the two server containers so they will be accessible to nginx
+docker run -d -p 8080:80 --link 12fapp_app_1 --link 12fapp_app_2 --name=nginx my_org_name/12fapp_nginx:1.0.0
+
+docker ps
+> CONTAINER ID   IMAGE                            COMMAND                  CREATED         STATUS         PORTS                                   NAMES
+> 1c44d578ffad   my_org_name/12fapp_nginx:1.0.0   "/docker-entrypoint.…"   4 seconds ago   Up 3 seconds   0.0.0.0:8080->80/tcp, :::8080->80/tcp   nginx
+> 89ea022de135   my_org_name/12fapp_node:1.0.0    "docker-entrypoint.s…"   7 minutes ago   Up 7 minutes   8080/tcp                                12fapp_app_2
+> cae837748a4a   my_org_name/12fapp_node:1.0.0    "docker-entrypoint.s…"   7 minutes ago   Up 7 minutes   8080/tcp                                12fapp_app_1
+
+curl http://localhost:8080
+> Hello from 192.168.128.3!
+curl http//:localhost:8080
+> Hello from 192.168.128.4!
+curl http//:localhost:8080
+> Hello from 192.168.128.3!
+curl http//:localhost:8080
+> Hello from 192.168.128.4!
+
+docker stop 12fapp_app_1
+> 12fapp_app_1
+
+docker ps
+> CONTAINER ID   IMAGE                            COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+> 1c44d578ffad   my_org_name/12fapp_nginx:1.0.0   "/docker-entrypoint.…"   3 minutes ago    Up 3 minutes    0.0.0.0:8080->80/tcp, :::8080->80/tcp   nginx
+> 89ea022de135   my_org_name/12fapp_node:1.0.0    "docker-entrypoint.s…"   10 minutes ago   Up 10 minutes   8080/tcp                                12fapp_app_2
+
+curl http://localhost:8080
+> Hello from 192.168.128.4!
+curl http//:localhost:8080
+> Hello from 192.168.128.4!
+curl http//:localhost:8080
+> Hello from 192.168.128.4!
+curl http//:localhost:8080
+> Hello from 192.168.128.4!
+```
+
+```docker title="Create a docker-compose.yml file in the root of the project"
+version: '3'
+services:
+  app:
+    build: ./node
+  nginx:
+    build: ./nginx
+    ports:
+      - '8080:80'
+```
+
+```bash {1} title="Run the app using docker-compose and scale the app container to 2 servers"
+docker-compose up -d --scale app=2
+
+docker ps
+> CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+> aa0677810b11   12fapp_app     "docker-entrypoint.s…"   29 seconds ago   Up 28 seconds   8080/tcp                                12fapp_app_1
+> b3c435a91619   12fapp_app     "docker-entrypoint.s…"   29 seconds ago   Up 28 seconds   8080/tcp                                12fapp_app_2
+> ada93133f50c   12fapp_nginx   "/docker-entrypoint.…"   29 seconds ago   Up 28 seconds   0.0.0.0:8080->80/tcp, :::8080->80/tcp   12fapp_nginx_1
+
+curl http://localhost:8080
+> Hello from 192.168.128.3!
+curl http//:localhost:8080
+> Hello from 192.168.128.4!
+curl http//:localhost:8080
+> Hello from 192.168.128.3!
+curl http//:localhost:8080
+> Hello from 192.168.128.4!
+```
+
+```bash title="Add changes to revision control"
+git add -A
+git commit -m "Add server greeting on requests"
+git push origin main
+```
 
 ## 9. Disposability
 
@@ -102,6 +631,44 @@ For brevity these examples assume `npm` is used as a package manager but the sam
 - The twelve-factor app's processes can be started or stopped at a moment's notice with no loss of data (by storing state or session data in queues or other backing services).
 - They must minimize startup time (take only a few seconds from the time the launch command is executed until the process is up and ready to receive requests or jobs)
 - They must also shut down gracefully - listen for a SIGTERM signal from the process manager (eg. for a web process, ceasing to listen on the service port and refusing any new requests, allowing any current requests to finish, ensuring that all database connections and other network resources are terminated properly, and then exiting, or for a worker process, returning the current job to the work queue - eg. a `RabbitMQ` worker can send a NACK).
+
+```js title="Example: Create an app (index.js) that waits for all open connections to finish before closing, when receiving a signal"
+const express = require('express')
+const app = express()
+
+let openConnections = 0
+
+app.get('/', (_, res) => {
+  console.log(`Open connections: ${++openConnections}`)
+  setTimeout(() => {
+    res.send('Hello!')
+    openConnections--
+  }, 15000)
+})
+
+const server = app.listen(8080, () => {
+  console.log('Server listening on port 8080...')
+})
+
+process.on('SIGTERM', () => handleSignal('SIGTERM'))
+process.on('SIGINT', () => handleSignal('SIGTERM'))
+
+function handleSignal(signalType) {
+  console.log(
+    `\n${signalType} signal received, waiting for open connections to finish...`
+  )
+  const i = setInterval(() => {
+    if (openConnections) {
+      console.log(`Open connections: ${openConnections}`)
+      return
+    }
+    clearInterval(i)
+    server.close(() =>
+      console.log('No connections in progress, HTTP server closed!')
+    )
+  }, 1000)
+}
+```
 
 ## 10. Dev/Prod Parity
 

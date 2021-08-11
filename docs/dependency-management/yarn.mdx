@@ -20,10 +20,21 @@ yarn remove <npm_package_name>              # remove a package from the project
 yarn <script_command_name>                  # run a command from the script section of package.json
 ```
 
+## Global packages
+
+```bash
+yarn global list                                   # list all globally installed packages
+yarn global add <npm_package_name>                 # install a package globally
+yarn global remove <npm_package_name>              # remove a globally installed package
+yarn global upgrade <npm_package_name>[@<version>] # upgrade a globally installed package to the latest (or to a specific) version
+```
+
+:::note
+For the vast majority of packages it is considered a **bad practice** to have global dependencies because they are implicit. It is much better to add all of your dependencies locally so that they are explicit and anyone else using your project gets the same set of dependencies.
+:::
+
 ## Commit the lock file
 
 :::important
-The generated `yarn.lock` file should always be commited to version control (just like the `package-lock.json` file if you would be using `npm` instead of `yarn`).
-
-**Some people who do not understand package management (and/or Git) argue agains this - please don't be one of those people!**
+The generated `yarn.lock` file should always be commited to version control (just like the `package-lock.json` file should if you were using `npm` instead of `yarn`).
 :::

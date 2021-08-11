@@ -60,6 +60,7 @@ module.exports = {
       items: [
         {
           to: '/',
+          activeBaseRegex: '^/$',
           position: 'left',
           label: 'About Me',
         },
